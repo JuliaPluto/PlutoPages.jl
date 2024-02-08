@@ -1,0 +1,24 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="hsl(235deg 19% 16%)">
+    <link rel="icon" href="$(root_url)/assets/favicon.ico" />
+    <link rel="icon" href="$(root_url)/assets/favicon.svg" type="image/svg+xml">
+
+    <title>PlutoPages Test website</title>
+    <meta name="description" content="Blablablabla">
+	
+	<link rel="stylesheet" href="$(root_url)/assets/styles/index.css" type="text/css" />
+	<link rel="stylesheet" href="$(root_url)/assets/styles/welcome.css" type="text/css" />
+
+</head>
+
+<body>
+        <main>
+            $(content)
+        </main>
+</body>
+
+</html>

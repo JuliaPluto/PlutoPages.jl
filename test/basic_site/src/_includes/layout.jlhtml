@@ -1,0 +1,90 @@
+$(begin
+    import Pluto
+    "The contents of `<head>` from a Pluto HTML export."
+    const pluto_head = let
+        default = Pluto.generate_html(; 
+            pluto_cdn_root=Pluto.PLUTO_VERSION < v"0.19" ? "https://cdn.jsdelivr.net/gh/fonsp/Pluto.jl@9ca70c36/frontend/" : nothing)
+        m = match(r"<head.*?>(.*)</head>"s, default)
+        reduce([
+            # r"<script[^\n]data-pluto-file=[\"']?launch-parameters.*?/script>"s
+            r"<title.*?/title>"
+            r"<meta name=[\"']?description.*?>"
+            r"<meta name=[\"']?description.*?>"
+            r"<link rel=[\"']?icon.*?>"
+        ]; init=m[1]) do s,r
+            replace(s, r => "")
+        end |> HTML
+    end
+    nothing
+end)<html lang="en">
+<head>
+
+<title>$(get(page.output.frontmatter, "title", splitext(basename(page.input.relative_path))[1])) — Pluto.jl</title>
+$(let d = get(page.output.frontmatter, "description", nothing)
+    if d !== nothing
+        @htl("""<meta name="description" content=$(d) />""")
+    end
+end)
+
+
+<link rel="icon" href="$(root_url)/assets/favicon.ico" />
+<link rel="icon" href="$(root_url)/assets/favicon.svg" type="image/svg+xml">
+
+<link rel="stylesheet" href="$(root_url)/assets/styles/index.css" type="text/css" />
+<link rel="stylesheet" href="$(root_url)/assets/styles/layout.css" type="text/css" />
+<script src="$(root_url)/assets/scripts/sidebar.js" type="module" defer></script>
+
+$(pluto_head)
+</head>
+<body>
+    <div id="pages-layout">
+        <button id="toggle-nav" title="Open navigation"></button>
+        <nav id="pages-sidebar">
+        <div>
+        <ul>
+            <li class="pluto_home_link"><a class="pluto_home_link" href=$(root_url)><img src="$(root_url)/assets/favicon.svg"><span> Pluto.jl</span></a>
+            </li>
+        $(let
+            sidebar_data = Base.include(@__MODULE__, joinpath(@__DIR__, "..", "sidebar data.jl"))
+            
+            parts = split(page.url, "/")
+            mylang = length(parts) >= 1 ? parts[1] : "en"
+            mysection = length(parts) >= 2 ? parts[2] : ""
+
+            for_my_lang = get(sidebar_data, mylang, Dict())
+            sections = get(for_my_lang, mysection, [])
+
+            [
+                @htl("""
+                <li>
+                <h3>$(section_name)</h3>
+                <ul>
+                $([
+                    let
+                        input = other_page.input
+                        output = other_page.output
+                        
+                        name = get(output.frontmatter, "title", basename(input.relative_path))
+                        desc = get(output.frontmatter, "description", nothing)
+                        active = page.url == other_page.url
+                        
+                        @htl("""<li class=$([
+                            active ? "active" : nothing,
+                        ])><a href=$(root_url * "/" * other_page.url) title=$(desc)>$(name)</a></li>""")
+                    end for other_page in pages
+                ])
+                </ul>
+                </li>
+                """)
+                for (section_name, pages) in sections
+            ]
+        end)
+        </ul>
+        </div>
+        </nav>
+        <div id="pages-content">
+        $(content)
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,146 @@
+---
+title: "📦 Packages: advanced"
+tags: ["docs", "reproducibility"]
+order: 2
+layout: "md.jlmd"
+---
+
+# Advanced: set up an environment with `Pkg.activate`
+
+Pluto's package manager is enabled for all users, for ease of use and to promote reproducibility in scientific computing. There is no option to disable the behaviour _globally_ (for your entire Pluto session). Instead, Pluto will detect notebooks that use `Pkg.activate` to set up an environment explicitly, and uses the old behaviour for those notebooks.
+
+The philosophy here is that everyone should have a reproducible package environment **by default**, without having to do anything. This takes priority over other use cases, and hence _not_ using the built-in package manager requires some extra work.
+
+<br>
+
+
+**Any notebook that calls [`Pkg.activate`](https://pkgdocs.julialang.org/v1/api/#Pkg.activate) will not use Pluto's package management,** and run in 'backwards compatibility mode'. The `Pkg.activate` call should be placed directly in your notebook code: it is detecting using the same syntax analysis used for reactivity.
+
+<br>
+<br>
+
+## Pattern: The "global environment"
+If you do not intend on sharing a notebook file and you want to use your global package environment (called `(v1.6)` or similar, the one you get when you launch the Julia REPL), then you can call `Pkg.activate()` without any arguments.
+
+> 🙋 If you are developing a package, then activating your global environment is an easy way to test your local version in Pluto.
+
+This "global environment" pattern can be placed at the top of a notebook:
+
+```julia
+begin
+    import Pkg
+    # careful: this is _not_ a reproducible environment
+    # activate the global environment
+    Pkg.activate()
+
+    using Plots, PlutoUI, LinearAlgebra
+end
+```
+
+
+When running this in Pluto (try it out!), you will notice that the status marks next to packages disappear, and Pluto is running in 'backwards compatibility mode'. Packages will no longer be installed or removed automatically, you have to use the Pkg REPL to do this yourself.
+
+
+<br>
+<br>
+
+## Pattern: The "shared environment"
+If you have multiple notebooks in a repository and you want to use share a Pkg environment between them, then you can call `Pkg.activate(path_to_environment)`. You can use `@__DIR__` to get the path of the notebook's folder, and `joinpath(@__DIR__, "..")` to get its parent, `joinpath(@__DIR__, "..", "..")` for the parent's parent, etc. 
+
+The function `Base.current_project()` can be used to **automatically** find the closest parent directory that contains a `Project.toml`, in most cases this is what you want.
+
+For example, if your project looks like this:
+
+```
+my_project/
+    data/
+        ...
+    notebooks/
+        Interesting analysis.jl
+        ...
+    Project.toml
+    Manifest.toml
+    ...
+```
+
+then the "shared environment" pattern can be placed at the top of a notebook:
+
+```julia
+begin
+    import Pkg
+    # activate the shared project environment
+    Pkg.activate(Base.current_project())
+    # instantiate, i.e. make sure that all packages are downloaded
+    Pkg.instantiate()
+
+    using Plots, PlutoUI, LinearAlgebra
+end
+```
+
+
+When running this in Pluto, you will notice that the status marks next to packages disappear, and Pluto is running in 'backwards compatibility mode'. Packages will no longer be installed or removed automatically, you have to use the Pkg REPL to do this yourself.
+
+
+<br>
+<br>
+
+## Pattern: The "Pkg cell"
+When adding packages, Pluto's default package management will always install the latest version from the registry. If you need to install a specific version or branch of a package, or a package is not registered, you can use a "Pkg cell".
+
+A common pattern is a so-called "Pkg cell", placed at the top of a notebook:
+
+```julia
+begin
+    import Pkg
+    # activate a temporary environment
+    Pkg.activate(mktempdir())
+    Pkg.add([
+        Pkg.PackageSpec(name="Plots", version="1"),
+        Pkg.PackageSpec(name="PlutoUI", version="0.7"),
+    ])
+    using Plots, PlutoUI, LinearAlgebra
+end
+```
+
+This will 1) activate a temporary environment using `Pkg.activate`, 2) add the required packages, 3) import them with `using`. When running this in Pluto (try it out!), you will notice that the status marks next to packages disappear, and Pluto is running in 'backwards compatibility mode'. Packages will no longer be installed or removed automatically, you have to use the Pkg REPL to do this yourself.
+
+Placing all code in a single `begin` block ensures that the lines will run in the correct order.
+
+
+
+
+
+
+
+
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+
+# Advanced: edit the notebook environment
+
+Pluto.jl includes a helper function `Pluto.activate_notebook_environment` that activates a notebook Pkg environment in the REPL:
+
+```julia
+julia> import Pluto
+
+julia> Pluto.activate_notebook_environment("~/Documents/hello.jl")
+
+julia> ]
+
+(hello.jl) > status
+```
+
+After activating a notebook environment, you can use the [Pkg REPL](https://pkgdocs.julialang.org/v1/repl/) to view or modify the embedded environment. Changes from either side are synchronised (i.e. Pkg REPL changes are written to the notebook, editing the notebook updates the Pkg REPL env). Watch the demo video:
+
+
+<video src="https://user-images.githubusercontent.com/6933510/111483040-b9c9ee80-8734-11eb-97bc-f51703fc57cc.mov" controls="controls" muted="muted"></video>
+  

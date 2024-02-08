@@ -390,7 +390,7 @@ md"""
 """
 
 # ╔═╡ c52c9786-a25f-11ec-1fdc-9b13922d7ccb
-const dir = joinpath(@__DIR__, "src")
+const input_dir = joinpath(@__DIR__, "src")
 
 # ╔═╡ cf27b3d3-1689-4b3a-a8fe-3ad639eb2f82
 md"""
@@ -409,7 +409,7 @@ const this_file = split(@__FILE__, "#==#")[1]
 
 # ╔═╡ d38dc2aa-d5ba-4cf7-9f9e-c4e4611a57ac
 function ignore(abs_path; allow_special_dirs::Bool=false)
-	p = relpath(abs_path, dir)
+	p = relpath(abs_path, input_dir)
 
 	# (_cache, _site, _andmore)
 	any(x -> ignored_dirname(x; allow_special_dirs), splitpath(p)) || 
@@ -424,8 +424,8 @@ dir_changed_time = let
 
 	@info "Starting watch task"
 	
-	@use_task([dir]) do
-		BetterFileWatching.watch_folder(dir) do e
+	@use_task([input_dir]) do
+		BetterFileWatching.watch_folder(input_dir) do e
 			@debug "File event" e
 			try
 				is_caused_by_me = all(x -> ignore(x; allow_special_dirs=true), e.paths)
@@ -444,12 +444,12 @@ dir_changed_time = let
 end
 
 # ╔═╡ 7d9cb939-da6b-4961-9584-a905ad453b5d
-allfiles = filter(PlutoSliderServer.list_files_recursive(dir)) do p
+allfiles = filter(PlutoSliderServer.list_files_recursive(input_dir)) do p
 	# reference to retrigger when files change
 	dir_changed_time
 	manual_update_trigger
 	
-	!ignore(joinpath(dir, p))
+	!ignore(joinpath(input_dir, p))
 end
 
 # ╔═╡ d314ab46-b866-44c6-bfca-9a413bc06514
@@ -737,7 +737,7 @@ template_results = let
 
 	# let's go! running all the template handlers
 	progressmap_async(allfiles; ntasks=NUM_PARALLEL_WORKERS) do f
-		absolute_path = joinpath(dir, f)
+		absolute_path = joinpath(input_dir, f)
 		
 		input = TemplateInput(;
 			contents=read(absolute_path),
@@ -803,7 +803,7 @@ function process_layouts(page::Page)::Page
 		
 		layoutname = output.frontmatter["layout"]
 		@assert layoutname isa String
-		layout_file = joinpath(dir, "_includes", layoutname)
+		layout_file = joinpath(input_dir, "_includes", layoutname)
 		@assert isfile(layout_file) "$layout_file is not a valid layout path"
 
 
@@ -816,7 +816,7 @@ function process_layouts(page::Page)::Page
 		input = TemplateInput(;
 			contents=read(layout_file),
 			absolute_path=layout_file,
-			relative_path=relpath(layout_file, dir),
+			relative_path=relpath(layout_file, input_dir),
 			frontmatter=merge(output.frontmatter, 
 				FrontMatter(
 					"content" => content,

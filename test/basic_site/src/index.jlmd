@@ -1,0 +1,15 @@
+---
+authors: ["myself"]
+tags: ["welcome"]
+layout: "welcome.jlhtml"
+---
+
+# This is a test page for PlutoPages.jl
+
+
+Check out these pages:
+- [Docs](/en/docs/)
+- [Blog 1](/en/blog/something/)
+- [Blog 2](/en/blog/yayy/)
+- [Example](/examples/how are you/)
+- [some html page](/htmlpage/)

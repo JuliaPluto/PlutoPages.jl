@@ -1,0 +1,120 @@
+---
+title: "📦 Packages"
+tags: ["docs", "reproducibility"]
+order: 1
+layout: "md.jlmd"
+---
+
+# Pluto's built-in _package management_
+
+Starting with version 0.15, Pluto has a _built-in_ package manager, which means:
+1. 🎈 Packages are **automatically installed** when you use `import` or `using`.
+2. 🎈 Your package environment is **stored inside the notebook file**. When someone else opens your notebook with Pluto, the exact same package environment will be used, and packages will work on their computer.
+
+> 🙋 These two features are designed to make it easy to write and share **reproducible notebooks**.
+
+<br>
+<br>
+<br>
+
+# Basic usage
+
+## Installing and using packages
+
+Pluto will automatically install or remove packages while you work on your notebook. When you import a new package, Pluto will install it:
+
+<img width="541" alt="Schermafbeelding 2021-06-10 om 20 35 52" src="https://user-images.githubusercontent.com/6933510/121580636-45e66c00-ca2d-11eb-97e2-351068d58057.png">
+
+
+
+
+> 🙋 Most packages will write _installation instructions_ in their documentation: like "Run `julia> ] install Example` to install `Example`". If you are using Pluto, you can skip these instructions, and import the package directly, using `import Example` or `using Example`.
+
+#### Logs
+
+Installing packages can take some time, especially when starting Julia for the first time. Click on the status mark next to a package to view the installation progress. You can click on the <img src="https://cdn.jsdelivr.net/gh/ionic-team/ionicons@5.5.1/src/svg/document-text-outline.svg" alt="📄" width=17px> icon to view the logs.
+
+<img width="541" src="https://media.giphy.com/media/EMv3miTVQPsVspplgY/giphy.gif">
+
+
+<br>
+<br>
+
+
+## Removing packages
+
+When you delete the code that imports a package, it will be uninstalled from the package environment. It is _recommended_ to restart the notebook process afterwards to get a fresh start.
+
+<img width="541" src="https://media.giphy.com/media/dIFYIHZ2zBFrFDCodM/giphy.gif">
+
+<br>
+<br>
+
+
+## Updating packages
+
+You can search for and install any available updates by clicking on the <img src="https://cdn.jsdelivr.net/gh/ionic-team/ionicons@5.5.1/src/svg/arrow-up-circle-outline.svg" alt="📄" width=17px> icon. A backup of your notebook file will be created in the same folder as your notebook, in case the new versions do not work as expected.
+
+<img width="541" alt="Update button" src="https://user-images.githubusercontent.com/6933510/121583646-d1adc780-ca30-11eb-9741-fc9529756061.png">
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+
+# Good to know
+
+### Based on Pkg
+
+Pluto's package management is a wrapper around [Pkg.jl](https://pkgdocs.julialang.org/v1/), Julia's built-in package manager. Packages are installed from the [General registry](https://github.com/JuliaRegistries/General). 
+
+> 🙋 You can discover all available packages on [juliahub.com](https://juliahub.com/ui/Home).
+
+### Isolated package environment
+
+Every notebook runs in its own isolated package environment. This ensures that your notebook code will not be influenced by packages installed elsewhere. (The `LOAD_PATH` is set to `["@", "@stdlib"]`.)
+
+### Notebook file
+
+Pluto stores the contents of [`Project.toml` and `Manifest.toml`](https://pkgdocs.julialang.org/v1/toml-files/) directly in the notebook file. For forwards-backwards compatibility, this is done using two extra "cells" at the bottom of the file, containing the two files as string literals. For example, here is a notebook that imports `HypertextLiteral` and `PlutoUI`: [`fonsp/Pluto file format demo.jl`](https://gist.github.com/fonsp/44e72741cefb6041506cb8c7040db1a7).
+
+> 🙋 We encourage you to open Pluto, import some packages and look at the file!
+
+### Fully reproducible environments
+
+When someone else opens your notebook for the first time, Pluto will install all required packages based on the information in the [`Manifest.toml`](https://pkgdocs.julialang.org/v1/toml-files/#Manifest.toml) file. This means that the exact same versions of all packages you used in the notebook will be installed, ensuring your work is fully reproducible when shared with others.
+
+### Compatibility across Pluto versions
+
+When opening an old Pluto notebook that does not have embedded project files, Pluto will generate them as if you typed those imports for the first time. If a call to `Pkg.activate` is made, the notebook will run in 'backwards compatibility mode', using the same environment and behaviour as old Pluto versions.
+
+### Compatibility across Julia versions
+
+The `Manifest.toml` is designed to be (generally) _backwards compatible_: you can upgrade Julia and use an old manifest. However, the `Manifest.toml` is not always _forwards compatible_: a manifest generated generated with a newer version of Julia might not run on older versions. 
+
+Pluto will always try to load the embedded manifest, and if it fails, it will _discard the manifest_ (leaving only `Project.toml`) and try again. This is one reason why Pluto automatically adds `[compat]` ranges for each package in the `Project.toml`.
+
+### Package installations are shared between environments
+
+In Julia, packages are always installed globally, while _environments_ (including notebooks) only store **version information**, not the package code itself. This means that multiple notebooks that use the same version of `Plots` will not lead to more disk usage or precompile time. (This is different from `venv` in Python/pip, or `node_modules` in NodeJS/npm, where every environment contains copies of package code by default.) Julia's package manager is designed to work well with many package environments on the same computer.
+
+Of course, if different notebooks use different version of the same package, and you work on both in parallel, then source files for both versions will exist on your computer. A small price to pay for simpler reproducibility!
+
+In Julia 1.5 and 1.6, you can clean up package files that have not been used in a while using `import Pkg; Pkg.gc()`. In Julia 1.7 and up, this will be done [automatically](https://github.com/JuliaLang/Pkg.jl/pull/2567).
+
+### Custom registries
+
+Pkg.jl supports additional private or public registries, which can be added in the Julia REPL with `] registry add https://github.com/myuser/MyRegistry.git`, and this is also supported by Pluto's package managemer. 
+
+However, note that registries are not stored in the `Project.toml`/`Manifest.toml` files, which means that other people can only open your notebook if they added the custom registry before doing so. Alternatively, you can use a "Pkg cell" (more on this later) where you add the registry before adding packages.
+
+<br>
+<br>
+<br>
+<br>
+
+<a href="../packages-advanced/" class="arrow">Learn more: advanced Pkg management</a>
