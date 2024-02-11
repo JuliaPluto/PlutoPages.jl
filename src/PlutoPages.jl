@@ -26,19 +26,24 @@ function run_plutopages_notebook(;
     cache_dir::String,
     kwargs...
 )
-    mkpath(output_dir)
-    mkpath(cache_dir)
     run_with_replacements(
         PlutoPages_notebook_path,
-        Dict(
-            :input_dir => input_dir,
-            :output_dir => output_dir,
-            :cache_dir => cache_dir,
-        );
+        plutopages_replacements(; input_dir, output_dir, cache_dir);
         kwargs...
     )
 end
 
+function plutopages_replacements(; 
+    input_dir::String, 
+    output_dir::String, 
+    cache_dir::String,
+)
+    Dict(
+        :input_dir => input_dir,
+        :output_dir => output_dir,
+        :cache_dir => cache_dir,
+    )
+end
 
 
 function create_subdirs(root_dir::String)
@@ -47,8 +52,8 @@ function create_subdirs(root_dir::String)
     
     (;
         input_dir = joinpath(root_dir, "src"),
-        output_dir = joinpath(root_dir, "_site"),
-        cache_dir = joinpath(root_dir, "_cache"),
+        output_dir = mkpath(joinpath(root_dir, "_site")),
+        cache_dir = mkpath(joinpath(root_dir, "_cache")),
     )
 end
 
@@ -131,7 +136,7 @@ function generate(;
 end
 
 generate(root_dir::String) = generate(;create_subdirs(root_dir)...)
-    
+
 
 function create_test_basic_site()
     original = joinpath(dirname(@__DIR__), "test", "basic_site")
