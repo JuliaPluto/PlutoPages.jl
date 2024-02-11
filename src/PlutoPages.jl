@@ -116,16 +116,25 @@ end
 
 
 
+function temp_module()
+    Core.eval(Main, :(module $(gensym(:PlutoPagesRunnger)) end))
+end
+
+
 
 function generate(; 
     input_dir::String, 
     output_dir::String, 
     cache_dir::String,
 )
-    app = run_plutopages_notebook(; input_dir, output_dir, cache_dir, run_server=false)
-    fetch(app.notebook_task)
+    session = Pluto.ServerSession()
+    notebook = open_notebook_with_replacements!(session, PlutoPages_notebook_path, plutopages_replacements(; input_dir, output_dir, cache_dir))
+    temppath = tempname() * "_PlutoPages.jl"
+    Pluto.save_notebook(notebook, temppath)
+
+    Core.include(temp_module(), temppath)
+
     @info "PlutoPages: cleaning up..."
-    shutdown(app)
     
     return output_dir
 end
