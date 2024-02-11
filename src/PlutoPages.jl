@@ -128,7 +128,19 @@ function generate(;
     cache_dir::String,
 )
     app = run_plutopages_notebook(; input_dir, output_dir, cache_dir, run_server=false)
-    fetch(app.notebook_task)
+    notebook = fetch(app.notebook_task)
+    
+    bad = false
+    for c in notebook.cells
+        if c.errored
+            bad = true
+            @error("Cell errored", c.code, c.output.body)
+        end
+    end
+    if bad
+        error("Error in notebook")
+    end
+    
     @info "PlutoPages: cleaning up..."
     shutdown(app)
     
