@@ -78,6 +78,7 @@ function run_with_replacements(notebook_path::AbstractString, inputs::Dict{Symbo
 
         # disable "Safe preview" mode
         notebook.process_status = Pluto.ProcessStatus.starting
+        foreach(c -> c.queued = true, notebook.cells)
         # run all cells
         Pluto.update_save_run!(session, notebook, notebook.cells; run_async=false)
         @info "Pluto app: notebook finished!"
