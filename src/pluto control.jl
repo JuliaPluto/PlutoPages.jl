@@ -1,5 +1,38 @@
 import Pluto: Pluto, PlutoDependencyExplorer
 
+
+function replace_definitions!(notebook::Pluto.Notebook, inputs::Dict{Symbol,<:Any})
+    for (name, value) in pairs(inputs)
+        # Find the cell that currently defines a variable with this name.
+        cs = PlutoDependencyExplorer.where_assigned(notebook.topology, Set([name]))
+        if length(cs) != 1
+            error("The variable $(name) is not defined in this notebook: it cannot be used as input to the app.")
+        else
+            c = only(cs)::Pluto.Cell
+
+            c.code = "const $(name) = $(repr(value))"
+            c.code_folded = true
+        end
+    end
+    
+    notebook
+end
+
+
+function open_notebook_with_replacements!(session::Pluto.ServerSession, notebook_path::AbstractString, inputs::Dict{Symbol,<:Any})
+    notebook = Pluto.SessionActions.open(
+        session, notebook_path; 
+        run_async=false,
+        execution_allowed=false, # start in "Safe mode", to allow us to inject some code before running the notebook :)
+    )
+    
+    notebook.topology = Pluto.static_resolve_topology(Pluto.updated_topology(notebook.topology, notebook, notebook.cells))
+    
+    replace_definitions!(notebook, inputs)
+end
+
+
+
 function run_with_replacements(notebook_path::AbstractString, inputs::Dict{Symbol,<:Any};
     run_server::Bool=false,
 )
@@ -23,26 +56,7 @@ function run_with_replacements(notebook_path::AbstractString, inputs::Dict{Symbo
 
     @info "PlutoPages: Starting Pluto server..."
     notebook_task = Threads.@spawn try
-        notebook = Pluto.SessionActions.open(
-            session, notebook_path; 
-            run_async=false,
-            execution_allowed=false, # start in "Safe mode", to allow us to inject some code before running the notebook :)
-        )
-        
-        notebook.topology = Pluto.static_resolve_topology(Pluto.updated_topology(notebook.topology, notebook, notebook.cells))
-        
-        for (name, value) in pairs(inputs)
-            # Find the cell that currently defines a variable with this name.
-            cs = PlutoDependencyExplorer.where_assigned(notebook.topology, Set([name]))
-            if length(cs) != 1
-                error("The variable $(name) is not defined in this notebook: it cannot be used as input to the app.")
-            else
-                c = only(cs)::Pluto.Cell
-
-                c.code = "const $(name) = $(repr(value))"
-                c.code_folded = true
-            end
-        end
+        notebook = open_notebook_with_replacements!(session, notebook_path, inputs)
 
         log_progress = Ref(true)
         let
