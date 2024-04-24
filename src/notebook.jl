@@ -556,9 +556,11 @@ end
 # ╔═╡ 41ab51f9-0b33-4548-b08a-ad1ef7d38f1b
 function sort_by(p::Page)
 	bn = basename(p.input.relative_path)
+	order_val = get(p.output.frontmatter, "order", nothing)
+	order = something(order_val isa String ? tryparse(Float64, order_val) : order_val, Inf)
 	
 	return (
-		get(p.output.frontmatter, "order", Inf),
+		order,
 		splitext(bn)[1] != "index",
 		# TODO: sort based on dates if we ever need that
 		bn,
