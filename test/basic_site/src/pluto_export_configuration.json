@@ -1,0 +1,14 @@
+{
+    
+    "title": "Notebooks from my site",
+    "description": "These are from my site yayyy!",
+    
+    "collections": [
+        {
+            "title": "Blog notebooks",
+            "description": "These notebooks are from our blog!",
+            "tags": ["widgets"]
+        }
+    ]
+    
+}
