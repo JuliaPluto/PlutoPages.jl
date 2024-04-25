@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.36
+# v0.19.41
 
 using Markdown
 using InteractiveUtils
@@ -339,6 +339,7 @@ function template_handler(::Union{
 		Val{Symbol(".png")},
 		Val{Symbol(".svg")},
 		Val{Symbol(".gif")},
+		Val{Symbol(".json")},
 	}, input::TemplateInput)::TemplateOutput
 
 	TemplateOutput(;
@@ -589,6 +590,12 @@ md"""
 ## Search index
 """
 
+# ╔═╡ 6460cf11-ae78-47e3-9ac1-649295e76ddc
+md"""
+## `pluto_export.json`
+We generate a [ `pluto_export.json` just like PSS.jl](https://github.com/JuliaPluto/PlutoSliderServer.jl/pull/68).
+"""
+
 # ╔═╡ 1a303aa4-bed5-4d9b-855c-23355f4a88fe
 md"""
 ## Writing to the output directory
@@ -709,6 +716,8 @@ function template_handler(
 		"""
 
 		frontmatter = Pluto.frontmatter(input.absolute_path)
+		frontmatter["plutopages_statefile_url"] = reg_s.url
+		frontmatter["plutopages_notebook_url"] = reg_n.url
 		
 		return TemplateOutput(;
 			contents = repr(MIME"text/html"(), h),
@@ -877,6 +886,49 @@ write(
 	JSON.json(collected_search_index_data)
 )
 
+# ╔═╡ 608ed895-3a62-4c11-8026-40120ab05af1
+config_json_data = let
+	page = find(p -> basename(p.url) == "pluto_export_configuration.json", rendered_results)
+	page === nothing ? Dict{String,Any}() : JSON.parse(SafeString(page.input.contents))
+end
+
+# ╔═╡ 52fc3e5e-21a6-4357-9e63-8a70a6e6deb8
+function index_json_data(page::Page)
+	r(s) = replace(s, root_url => ".")
+	
+	(
+		hash=PlutoSliderServer.plutohash(page.input.contents),
+		statefile_path=r(page.output.frontmatter["plutopages_statefile_url"]),
+		notebookfile_path=r(page.output.frontmatter["plutopages_notebook_url"]),
+		html_path=page.full_url,
+		frontmatter=page.output.frontmatter,
+	)
+end
+
+# ╔═╡ d7a01c06-7174-4e6d-b02d-79c953ecdb79
+index_json = let
+	nbz = filter(rendered_results) do page
+		haskey(page.output.frontmatter, "plutopages_statefile_url")
+	end
+	
+	(
+		notebooks=Dict(page.url => index_json_data(page) for page in nbz),
+		pluto_version=lstrip(Pluto.PLUTO_VERSION_STR, 'v'),
+		julia_version=lstrip(string(VERSION), 'v'),
+		format_version="1",
+	
+		title=get(config_json_data, "title", nothing),
+		description=get(config_json_data, "description", nothing),
+		collections=get(config_json_data, "collections", nothing),
+	)
+end
+
+# ╔═╡ 7ed02eaa-9d88-4faa-a61f-bf1d1f748fce
+write(
+	joinpath(output_dir, "pluto_export.json"), 
+	JSON.json(index_json)
+)
+
 # ╔═╡ 9845db00-149c-45be-9e4f-55d1157afc87
 process_results = map(rendered_results) do page
 	input = page.input
@@ -1015,6 +1067,11 @@ end
 # ╟─57fd383b-d791-4170-a353-f839356f9d7a
 # ╟─05f735e0-01cc-4276-a3f9-8420296e68be
 # ╠═d8e9b950-6e71-40e2-bac1-c3ba85bc83ee
+# ╟─6460cf11-ae78-47e3-9ac1-649295e76ddc
+# ╟─52fc3e5e-21a6-4357-9e63-8a70a6e6deb8
+# ╟─608ed895-3a62-4c11-8026-40120ab05af1
+# ╟─d7a01c06-7174-4e6d-b02d-79c953ecdb79
+# ╠═7ed02eaa-9d88-4faa-a61f-bf1d1f748fce
 # ╟─1a303aa4-bed5-4d9b-855c-23355f4a88fe
 # ╠═834294ff-9441-4e71-b5c0-edaf32d860ee
 # ╠═1be06e4b-6072-46c3-a63d-aa95e51c43b4
