@@ -1,2 +1,5 @@
 /Manifest.toml
 .DS_Store
+
+/src/_site
+/src/_cache
