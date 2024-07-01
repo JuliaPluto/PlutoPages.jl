@@ -87,6 +87,7 @@ function develop(;
     input_dir::String, 
     output_dir::String, 
     cache_dir::String,
+    inject_browser_reload_script::Bool=true,
 )
     app = run_plutopages_notebook(; input_dir, output_dir, cache_dir, run_server=true)
     
@@ -96,7 +97,7 @@ function develop(;
     @info "PlutoPages: Press Ctrl+C multiple times to stop the server."
     file_server_port = rand(8100:8900)
     
-    file_server_task = Threads.@spawn LiveServer.serve(port=file_server_port, dir=output_dir)
+    file_server_task = Threads.@spawn LiveServer.serve(; port=file_server_port, dir=output_dir, inject_browser_reload_script)
     
     sleep(2)
     
