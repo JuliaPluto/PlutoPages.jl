@@ -42,4 +42,12 @@ end
     Base.throwto(t, InterruptException())
     Base.throwto(t, InterruptException())
     Base.throwto(t, InterruptException())
+    
+    try
+        wait(t)
+    catch e
+        if !isa(e, InterruptException)
+            rethrow(e)
+        end
+    end
 end
