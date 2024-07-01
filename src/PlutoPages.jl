@@ -1,5 +1,38 @@
 module PlutoPages
 
+# import all the things that the notebook needs
+import BetterFileWatching,
+    CommonMark,
+    Gumbo,
+    HypertextLiteral,
+    InteractiveUtils,
+    JSON,
+    LiveServer,
+    Logging,
+    Malt,
+    Markdown,
+    MarkdownLiteral,
+    Pkg,
+    Pluto,
+    PlutoHooks,
+    PlutoLinks,
+    PlutoSliderServer,
+    PlutoUI,
+    ProgressLogging,
+    RelocatableFolders,
+    SHA,
+    ThreadsX,
+    Unicode,
+    YAML
+
+
+
+
+
+
+
+
+
 import Pluto
 using RelocatableFolders
 import LiveServer
@@ -37,6 +70,8 @@ function plutopages_replacements(;
     input_dir::String, 
     output_dir::String, 
     cache_dir::String,
+    ap::String,
+    lp::Vector{String},
 )
     Dict(
         :input_dir => input_dir,

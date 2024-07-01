@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.41
+# v0.19.43
 
 using Markdown
 using InteractiveUtils
@@ -14,30 +14,53 @@ macro bind(def, element)
     end
 end
 
+# ╔═╡ 658b1b24-a7b2-47ab-ba53-b570dfeb8bfa
+begin
+	# When the PlutoPages.jl package runs this notebook, it will override this variable.
+	# Instead of `nothing`, the value will be a Tuple{String,Vector{String}} containg `(Base.activate_project(), LOAD_PATH)`.
+	# 
+	# But if you're reading this, then no override happened, because you are developing this notebook yourself. In this case, the project environment of PlutoPages should have been activated.
+	const override_ap_lp = nothing
+
+	# import Pkg here to help the dependency sorting algorithm
+	import Pkg
+end
+
 # ╔═╡ b8024c95-6a63-4409-9c75-9bad6b301a92
 begin
-	import Pkg
-	Pkg.activate(dirname(@__DIR__))
+	if override_ap_lp === nothing
+		Pkg.activate(dirname(@__DIR__))
+	else
+		ap, lp = override_ap_lp
+		Pkg.activate(ap)
+		copy!(LOAD_PATH, lp)
+	end
+
+	# to make all the Pkg stuff work, all imports have to come from the PlutoPages package! like so:
+
+	# NOT:
+	# import PlutoSliderServer
 	
-	import PlutoSliderServer
-	import Pluto
-	using MarkdownLiteral
+	# YES:
+	import PlutoPages.PlutoSliderServer
+	import PlutoPages.Pluto
+	using PlutoPages.MarkdownLiteral
 end
 
 # ╔═╡ d4cfce05-bae4-49ae-b26d-ce27171a3853
-using PlutoUI
+using PlutoPages.PlutoUI
 
 # ╔═╡ ce840b47-8406-48e6-abfb-1b00daab28dd
-using HypertextLiteral
+using PlutoPages.HypertextLiteral
 
 # ╔═╡ 7c53c1e3-6ccf-4804-8bc3-09126036608e
-using PlutoHooks
+using PlutoPages.PlutoHooks
 
 # ╔═╡ 725cb996-68ac-4736-95ee-0a9754867bf3
-using BetterFileWatching
+using PlutoPages.BetterFileWatching
 
 # ╔═╡ 9d996c55-0e37-4ae9-a6a2-8c8761e8c6db
-using PlutoLinks
+using PlutoPages.PlutoLinks
 
 # ╔═╡ c5a0b072-7f49-4c0c-855e-773cfc03d308
 TableOfContents(include_definitions=true)
@@ -46,13 +69,13 @@ TableOfContents(include_definitions=true)
 import Logging
 
 # ╔═╡ 66c97351-2294-4ac2-a93a-f334aaee8f92
-import Gumbo
+import PlutoPages.Gumbo
 
 # ╔═╡ bcbda2d2-90a5-43e6-8400-d5472578f86a
-import ProgressLogging
+import PlutoPages.ProgressLogging
 
 # ╔═╡ cd576da6-59ae-4d1b-b812-1a35023b6875
-import ThreadsX
+import PlutoPages.ThreadsX
 
 # ╔═╡ 86471faf-af03-4f35-8b95-c4011ceaf7c3
 function progressmap_generic(mapfn, f, itr; kwargs...)
@@ -133,10 +156,10 @@ md"""
 """
 
 # ╔═╡ f4a4b741-8028-4626-9187-0b6a52f062b6
-import CommonMark
+import PlutoPages.CommonMark
 
 # ╔═╡ 535efb29-73bd-4e65-8bbc-18b72ae8fe1f
-import YAML
+import PlutoPages.YAML
 
 # ╔═╡ 90f0c676-b33f-441c-8ea6-d59c44a11547
 s_example = raw"""
@@ -476,7 +499,7 @@ md"""
 """
 
 # ╔═╡ c3a495c1-3e1f-42a1-ac08-8dc0b9175fe9
-# import Deno_jll
+# import PlutoPages.Deno_jll
 
 # ╔═╡ 3b2d1919-41d9-4bba-9774-c8497bba5003
 # dev_server_port = 4507
@@ -602,7 +625,7 @@ md"""
 """
 
 # ╔═╡ 834294ff-9441-4e71-b5c0-edaf32d860ee
-import JSON
+import PlutoPages.JSON
 
 # ╔═╡ eef54261-767a-4ce4-b549-0b1828379f7e
 SafeString(x) = String(x)
@@ -979,6 +1002,7 @@ begin
 end
 
 # ╔═╡ Cell order:
+# ╠═658b1b24-a7b2-47ab-ba53-b570dfeb8bfa
 # ╠═b8024c95-6a63-4409-9c75-9bad6b301a92
 # ╠═c5a0b072-7f49-4c0c-855e-773cfc03d308
 # ╠═d4cfce05-bae4-49ae-b26d-ce27171a3853
