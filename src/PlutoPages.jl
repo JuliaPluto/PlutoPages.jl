@@ -75,6 +75,13 @@ const isolated_cell_ids = (
 )
 const isolated_cell_query = join("&isolated_cell_id=$(i)" for i in isolated_cell_ids)
 
+function dashboard_url_path(app)
+    "edit?secret=$(app.session.secret)&id=$(fetch(app.notebook_task).notebook_id)$(isolated_cell_query)"
+end
+
+function dashboard_url(app)
+    "http://localhost:$(app.pluto_server_port)/$(dashboard_url_path(app))"
+end
 
 function develop(; 
     input_dir::String, 
@@ -94,9 +101,9 @@ function develop(;
     sleep(2)
     
     dev_server_url = "http://localhost:$(file_server_port)/"
-    pluto_server_url = "http://localhost:$(app.pluto_server_port)/edit?secret=$(app.session.secret)&id=$(notebook.notebook_id)$(isolated_cell_query)"
-    
-        
+    pluto_server_url = dashboard_url(app)
+
+
     @info """
 
     ✅✅✅
