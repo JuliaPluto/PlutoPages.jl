@@ -897,6 +897,7 @@ function index_json_data(page::Page)
 	r(s) = replace(s, root_url => ".")
 	
 	(
+		id=page.url,
 		hash=PlutoSliderServer.plutohash(page.input.contents),
 		statefile_path=r(page.output.frontmatter["plutopages_statefile_url"]),
 		notebookfile_path=r(page.output.frontmatter["plutopages_notebook_url"]),
