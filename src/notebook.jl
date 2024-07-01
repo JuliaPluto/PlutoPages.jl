@@ -28,6 +28,9 @@ end
 
 # ╔═╡ b8024c95-6a63-4409-9c75-9bad6b301a92
 begin
+	# when the `override_ap_lp` cell gets overriden, the `import Pkg` disappears, here's the fix
+	eval(:(import Pkg))
+	
 	if override_ap_lp === nothing
 		Pkg.activate(dirname(@__DIR__))
 	else
@@ -36,6 +39,11 @@ begin
 		copy!(LOAD_PATH, lp)
 	end
 
+	import PlutoPages
+end
+
+# ╔═╡ 87023138-83f8-4ba7-a05e-444714d0b0d1
+begin
 	# to make all the Pkg stuff work, all imports have to come from the PlutoPages package! like so:
 
 	# NOT:
@@ -1004,6 +1012,7 @@ end
 # ╔═╡ Cell order:
 # ╠═658b1b24-a7b2-47ab-ba53-b570dfeb8bfa
 # ╠═b8024c95-6a63-4409-9c75-9bad6b301a92
+# ╠═87023138-83f8-4ba7-a05e-444714d0b0d1
 # ╠═c5a0b072-7f49-4c0c-855e-773cfc03d308
 # ╠═d4cfce05-bae4-49ae-b26d-ce27171a3853
 # ╠═644552c6-4e32-4caf-90ef-bee259977094

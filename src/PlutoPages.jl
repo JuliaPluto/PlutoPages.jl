@@ -61,7 +61,7 @@ function run_plutopages_notebook(;
 )
     run_with_replacements(
         PlutoPages_notebook_path,
-        plutopages_replacements(; input_dir, output_dir, cache_dir);
+        plutopages_replacements(; input_dir, output_dir, cache_dir, ap=Base.active_project(), lp=LOAD_PATH);
         kwargs...
     )
 end
@@ -77,6 +77,7 @@ function plutopages_replacements(;
         :input_dir => input_dir,
         :output_dir => output_dir,
         :cache_dir => cache_dir,
+        :override_ap_lp => (ap, lp),
     )
 end
 
