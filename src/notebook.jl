@@ -496,9 +496,7 @@ const output_dir = mkpath(joinpath(@__DIR__, "_site"))
 
 
 # ╔═╡ 7a95681a-df77-408f-919a-2bee5afd7777
-"""
-This directory can be used to store cache files that are persisted between builds. Currently used as PlutoSliderServer.jl cache.
-"""
+# This directory can be used to store cache files that are persisted between builds. Currently used as PlutoSliderServer.jl cache.
 const cache_dir = mkpath(joinpath(@__DIR__, "_cache"))
 
 # ╔═╡ f3d225b8-b9a5-4639-97eb-7785b1a78f5a
