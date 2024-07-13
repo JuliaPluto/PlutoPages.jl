@@ -856,9 +856,10 @@ function process_layouts(page::Page)::Page
         metadata = Dict()
         metapath = joinpath(input_dir, "_data")
         if isdir(metapath)
-        for data_file in readdir(metapath; join=true)
-            key = splitext(basename(data_file))[1]
-            metadata[key] = include(data_file)
+            for data_file in readdir(metapath; join=true)
+                key = splitext(basename(data_file))[1]
+                metadata[key] = include(data_file)
+            end
         end
 
         content = if ishtml(output)
