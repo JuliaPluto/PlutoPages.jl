@@ -852,8 +852,11 @@ function process_layouts(page::Page)::Page
         @assert isfile(layout_file) "$layout_file is not a valid layout path"
 
 
+        # read metadata if present
         metadata = Dict()
-        for data_file in readdir(joinpath(input_dir, "_data"); join=true)
+        metapath = joinpath(input_dir, "_data")
+        if isdir(metapath)
+        for data_file in readdir(metapath; join=true)
             key = splitext(basename(data_file))[1]
             metadata[key] = include(data_file)
         end
