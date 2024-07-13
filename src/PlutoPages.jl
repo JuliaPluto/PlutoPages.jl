@@ -25,14 +25,6 @@ import BetterFileWatching,
     Unicode,
     YAML
 
-
-
-
-
-
-
-
-
 import Pluto
 using RelocatableFolders
 import LiveServer
@@ -41,21 +33,12 @@ include("./pluto control.jl")
 include("./open in browser.jl")
 
 
-# """
-# Generate 
-# """
-# function generate()
-    
-    
-    
-# end
-
 const PlutoPages_notebook_path = @path joinpath(dirname(@__DIR__), "src", "notebook.jl")
 
 
-function run_plutopages_notebook(; 
-    input_dir::String, 
-    output_dir::String, 
+function run_plutopages_notebook(;
+    input_dir::String,
+    output_dir::String,
     cache_dir::String,
     kwargs...
 )
@@ -66,9 +49,9 @@ function run_plutopages_notebook(;
     )
 end
 
-function plutopages_replacements(; 
-    input_dir::String, 
-    output_dir::String, 
+function plutopages_replacements(;
+    input_dir::String,
+    output_dir::String,
     cache_dir::String,
     ap::String,
     lp::Vector{String},
@@ -85,16 +68,16 @@ end
 function create_subdirs(root_dir::String)
     @assert(isdir(root_dir))
     @assert(isdir(joinpath(root_dir, "src")))
-    
+
     (;
-        input_dir = joinpath(root_dir, "src"),
-        output_dir = mkpath(joinpath(root_dir, "_site")),
-        cache_dir = mkpath(joinpath(root_dir, "_cache")),
+        input_dir=joinpath(root_dir, "src"),
+        output_dir=mkpath(joinpath(root_dir, "_site")),
+        cache_dir=mkpath(joinpath(root_dir, "_cache")),
     )
 end
 
 function develop(root_dir::String)
-    develop(;create_subdirs(root_dir)...)
+    develop(; create_subdirs(root_dir)...)
 end
 
 
@@ -119,24 +102,24 @@ function dashboard_url(app)
     "http://localhost:$(app.pluto_server_port)/$(dashboard_url_path(app))"
 end
 
-function develop(; 
-    input_dir::String, 
-    output_dir::String, 
+function develop(;
+    input_dir::String,
+    output_dir::String,
     cache_dir::String,
     inject_browser_reload_script::Bool=true,
 )
     app = run_plutopages_notebook(; input_dir, output_dir, cache_dir, run_server=true)
-    
+
     notebook = fetch(app.notebook_task)
-    
+
     ccall(:jl_exit_on_sigint, Cvoid, (Cint,), 0)
     @info "PlutoPages: Press Ctrl+C multiple times to stop the server."
     file_server_port = rand(8100:8900)
-    
+
     file_server_task = Threads.@spawn LiveServer.serve(; port=file_server_port, dir=output_dir, inject_browser_reload_script)
-    
+
     sleep(2)
-    
+
     dev_server_url = "http://localhost:$(file_server_port)/"
     pluto_server_url = dashboard_url(app)
 
@@ -166,14 +149,14 @@ end
 
 
 
-function generate(; 
-    input_dir::String, 
-    output_dir::String, 
+function generate(;
+    input_dir::String,
+    output_dir::String,
     cache_dir::String,
 )
     app = run_plutopages_notebook(; input_dir, output_dir, cache_dir, run_server=false)
     notebook = fetch(app.notebook_task)
-    
+
     bad = false
     for c in notebook.cells
         if c.errored
@@ -184,14 +167,14 @@ function generate(;
     if bad
         error("Error in notebook")
     end
-    
+
     @info "PlutoPages: cleaning up..."
     shutdown(app)
-    
+
     return output_dir
 end
 
-generate(root_dir::String) = generate(;create_subdirs(root_dir)...)
+generate(root_dir::String) = generate(; create_subdirs(root_dir)...)
 
 
 function create_test_basic_site()
