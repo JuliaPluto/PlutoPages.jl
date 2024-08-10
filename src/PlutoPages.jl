@@ -94,8 +94,8 @@ function create_subdirs(root_dir::String)
     )
 end
 
-function develop(root_dir::String)
-    develop(;create_subdirs(root_dir)...)
+function develop(root_dir::String; kwargs...)
+    develop(;create_subdirs(root_dir)..., kwargs...)
 end
 
 
@@ -199,7 +199,7 @@ function generate(;
     return output_dir
 end
 
-generate(root_dir::String) = generate(;create_subdirs(root_dir)...)
+generate(root_dir::String; kwargs...) = generate(;create_subdirs(root_dir)..., kwargs...)
 
 
 function create_test_basic_site()

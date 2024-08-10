@@ -7,7 +7,9 @@ using Test
     
     dirs = PlutoPages.create_subdirs(input_dir)
     
-    result = PlutoPages.generate(; dirs...)
+    html_report_path = tempname(cleanup=false)
+    
+    result = PlutoPages.generate(; dirs..., html_report_path)
     @test result == dirs.output_dir
     
     @info "Done!" dirs readdir(dirs.input_dir) readdir(dirs.output_dir)
@@ -22,5 +24,5 @@ using Test
     @test isfile(joinpath(dirs.output_dir, "en", "blog", "something", "index.html"))
     @test isfile(joinpath(dirs.output_dir, "en", "blog", "yayy", "index.html"))
     
-    
+    @test isfile(html_report_path)
 end
