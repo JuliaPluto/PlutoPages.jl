@@ -83,11 +83,12 @@ end
 
 
 function create_subdirs(root_dir::String)
-    @assert(isdir(root_dir))
-    @assert(isdir(joinpath(root_dir, "src")))
-    
+    @assert isdir(root_dir)
+    input_dir = joinpath(root_dir, "src")
+    @assert isdir(input_dir) "Input directory is empty: $(input_dir).\n\nUse PlutoPages in a directory with a 'src' subdirectory. Your notebooks and markdown files go in there."
+
     (;
-        input_dir = joinpath(root_dir, "src"),
+        input_dir,
         output_dir = mkpath(joinpath(root_dir, "_site")),
         cache_dir = mkpath(joinpath(root_dir, "_cache")),
     )
@@ -130,7 +131,6 @@ function develop(;
     notebook = fetch(app.notebook_task)
     
     ccall(:jl_exit_on_sigint, Cvoid, (Cint,), 0)
-    @info "PlutoPages: Press Ctrl+C multiple times to stop the server."
     file_server_port = rand(8100:8900)
     
     file_server_task = Threads.@spawn LiveServer.serve(; port=file_server_port, dir=output_dir, inject_browser_reload_script)
@@ -152,6 +152,8 @@ function develop(;
     ➡️   $(pluto_server_url)
 
     ✅✅✅
+    
+    Press Ctrl+C multiple times to stop the development server.
 
     """
 
@@ -162,7 +164,6 @@ function develop(;
     wait(app.pluto_server_instance)
     app
 end
-
 
 
 
