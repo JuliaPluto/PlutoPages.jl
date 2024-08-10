@@ -41,11 +41,16 @@ begin
 
 	# huh why do we import PlutoPages into itself? That's so that we can load the dependencies of PlutoPages... yay!
 	import PlutoPages
+
+	ap_lp_ready = true
 end
 
-# ╔═╡ 87023138-83f8-4ba7-a05e-444714d0b0d1
+# ╔═╡ 6f2d5ce1-0f60-4551-8d39-62c66f72f175
 begin
-	# to make all the Pkg stuff work, all imports have to come from the PlutoPages package! like so:
+	@assert ap_lp_ready
+	# all imports need to be in this cell!
+
+	# and all imports have to come from the PlutoPages package! like so:
 
 	# NOT:
 	# import PlutoSliderServer
@@ -53,38 +58,37 @@ begin
 	# YES:
 	import PlutoPages.PlutoSliderServer
 	import PlutoPages.Pluto
+	import PlutoPages.Gumbo
+	import PlutoPages.ProgressLogging
+	import PlutoPages.ThreadsX
+	import PlutoPages.CommonMark
+	import PlutoPages.YAML
+	import PlutoPages.JSON
+	
+	using PlutoPages.HypertextLiteral
 	using PlutoPages.MarkdownLiteral
+	using PlutoPages.PlutoUI
+
+	using PlutoPages.PlutoHooks
+	using PlutoPages.PlutoLinks
+	using PlutoPages.BetterFileWatching
+
+	# except stdlibs, they are fine
+	import Logging, SHA, Unicode
 end
 
-# ╔═╡ d4cfce05-bae4-49ae-b26d-ce27171a3853
-using PlutoPages.PlutoUI
-
-# ╔═╡ ce840b47-8406-48e6-abfb-1b00daab28dd
-using PlutoPages.HypertextLiteral
-
-# ╔═╡ 7c53c1e3-6ccf-4804-8bc3-09126036608e
-using PlutoPages.PlutoHooks
-
-# ╔═╡ 725cb996-68ac-4736-95ee-0a9754867bf3
-using PlutoPages.BetterFileWatching
-
-# ╔═╡ 9d996c55-0e37-4ae9-a6a2-8c8761e8c6db
-using PlutoPages.PlutoLinks
+# ╔═╡ 2b7d1ee2-0f71-4091-aec2-cde62d2b6b36
+md"""
+# Package imports
+"""
 
 # ╔═╡ c5a0b072-7f49-4c0c-855e-773cfc03d308
 TableOfContents(include_definitions=true)
 
-# ╔═╡ 644552c6-4e32-4caf-90ef-bee259977094
-import Logging
-
-# ╔═╡ 66c97351-2294-4ac2-a93a-f334aaee8f92
-import PlutoPages.Gumbo
-
-# ╔═╡ bcbda2d2-90a5-43e6-8400-d5472578f86a
-import PlutoPages.ProgressLogging
-
 # ╔═╡ cd576da6-59ae-4d1b-b812-1a35023b6875
-import PlutoPages.ThreadsX
+md"""
+# `Base.map` with progress and multithreading
+"""
 
 # ╔═╡ 86471faf-af03-4f35-8b95-c4011ceaf7c3
 function progressmap_generic(mapfn, f, itr; kwargs...)
@@ -163,12 +167,6 @@ md"""
 md"""
 ## `.md` and `.jlmd`: MarkdownLiteral.jl
 """
-
-# ╔═╡ f4a4b741-8028-4626-9187-0b6a52f062b6
-import PlutoPages.CommonMark
-
-# ╔═╡ 535efb29-73bd-4e65-8bbc-18b72ae8fe1f
-import PlutoPages.YAML
 
 # ╔═╡ 90f0c676-b33f-441c-8ea6-d59c44a11547
 s_example = raw"""
@@ -391,12 +389,6 @@ struct RegisteredAsset
 	relative_path::String
 	absolute_path::String
 end
-
-# ╔═╡ 8f6393a4-e945-4f06-90f6-0a71f874c8e9
-import SHA
-
-# ╔═╡ 4fcdd524-86a8-4033-bc7c-4a7c04224eeb
-import Unicode
 
 # ╔═╡ 070c710d-3746-4706-bd03-b5b00a576007
 function myhash(data)
@@ -630,9 +622,6 @@ We generate a [ `pluto_export.json` just like PSS.jl](https://github.com/JuliaPl
 md"""
 ## Writing to the output directory
 """
-
-# ╔═╡ 834294ff-9441-4e71-b5c0-edaf32d860ee
-import PlutoPages.JSON
 
 # ╔═╡ eef54261-767a-4ce4-b549-0b1828379f7e
 SafeString(x) = String(x)
@@ -1015,15 +1004,12 @@ begin
 end
 
 # ╔═╡ Cell order:
-# ╠═658b1b24-a7b2-47ab-ba53-b570dfeb8bfa
-# ╠═b8024c95-6a63-4409-9c75-9bad6b301a92
-# ╠═87023138-83f8-4ba7-a05e-444714d0b0d1
+# ╟─2b7d1ee2-0f71-4091-aec2-cde62d2b6b36
+# ╟─658b1b24-a7b2-47ab-ba53-b570dfeb8bfa
+# ╟─b8024c95-6a63-4409-9c75-9bad6b301a92
+# ╠═6f2d5ce1-0f60-4551-8d39-62c66f72f175
 # ╠═c5a0b072-7f49-4c0c-855e-773cfc03d308
-# ╠═d4cfce05-bae4-49ae-b26d-ce27171a3853
-# ╠═644552c6-4e32-4caf-90ef-bee259977094
-# ╠═66c97351-2294-4ac2-a93a-f334aaee8f92
-# ╠═bcbda2d2-90a5-43e6-8400-d5472578f86a
-# ╠═cd576da6-59ae-4d1b-b812-1a35023b6875
+# ╟─cd576da6-59ae-4d1b-b812-1a35023b6875
 # ╟─e0ae20f5-ffe7-4f0e-90be-168924526e03
 # ╟─d58f2a89-4631-4b19-9d60-5e590908b61f
 # ╟─2221f133-e490-4e3a-82d4-bd1c6c979d1c
@@ -1033,11 +1019,8 @@ end
 # ╠═6288f145-444b-41cb-b9e3-8f273f9517fb
 # ╠═ff55f7eb-a23d-4ca7-b428-ab05dcb8f090
 # ╟─4a2dc5a4-0bf2-4678-b984-4ecb7b397d72
-# ╠═ce840b47-8406-48e6-abfb-1b00daab28dd
 # ╠═995c6810-8df2-483d-a87a-2277af0d43bd
 # ╟─b3ce7742-fb47-4c17-bac2-e6a7710eb1a1
-# ╠═f4a4b741-8028-4626-9187-0b6a52f062b6
-# ╠═535efb29-73bd-4e65-8bbc-18b72ae8fe1f
 # ╠═7e86cfc7-5439-4c7a-9c3b-381c776d8371
 # ╠═90f0c676-b33f-441c-8ea6-d59c44a11547
 # ╠═5381e8b3-d4f9-4e58-8da3-f1ee0a9b7a6d
@@ -1058,17 +1041,12 @@ end
 # ╟─940f3995-1739-4b30-b8cf-c27a671043e5
 # ╠═0d2b7382-2ddf-48c3-90c8-bc22de454c97
 # ╠═5e91e7dc-82b6-486a-b745-34f97b6fb20c
-# ╠═8f6393a4-e945-4f06-90f6-0a71f874c8e9
-# ╠═4fcdd524-86a8-4033-bc7c-4a7c04224eeb
 # ╟─070c710d-3746-4706-bd03-b5b00a576007
 # ╟─a5c22f80-58c7-4c63-95b8-ecb30bc896d0
 # ╟─750782a1-3aeb-4816-8f6a-ec31055373c1
 # ╟─f6b89b8c-3750-4dd2-940e-579be953c1c2
 # ╟─29a81ad7-3803-4b7a-98ca-6e5b1077e1c7
 # ╠═c52c9786-a25f-11ec-1fdc-9b13922d7ccb
-# ╠═7c53c1e3-6ccf-4804-8bc3-09126036608e
-# ╠═725cb996-68ac-4736-95ee-0a9754867bf3
-# ╠═9d996c55-0e37-4ae9-a6a2-8c8761e8c6db
 # ╟─cf27b3d3-1689-4b3a-a8fe-3ad639eb2f82
 # ╟─7f7f1981-978d-4861-b840-71ab611faf74
 # ╟─7d9cb939-da6b-4961-9584-a905ad453b5d
@@ -1113,7 +1091,6 @@ end
 # ╟─d7a01c06-7174-4e6d-b02d-79c953ecdb79
 # ╠═7ed02eaa-9d88-4faa-a61f-bf1d1f748fce
 # ╟─1a303aa4-bed5-4d9b-855c-23355f4a88fe
-# ╠═834294ff-9441-4e71-b5c0-edaf32d860ee
 # ╠═1be06e4b-6072-46c3-a63d-aa95e51c43b4
 # ╠═9845db00-149c-45be-9e4f-55d1157afc87
 # ╟─eef54261-767a-4ce4-b549-0b1828379f7e
