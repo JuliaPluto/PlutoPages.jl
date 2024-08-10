@@ -59,6 +59,9 @@ function run_plutopages_notebook(;
     cache_dir::String,
     kwargs...
 )
+    @assert isabspath(input_dir)
+    @assert isabspath(output_dir)
+    @assert isabspath(cache_dir)
     run_with_replacements(
         PlutoPages_notebook_path,
         plutopages_replacements(; input_dir, output_dir, cache_dir, ap=Base.active_project(), lp=LOAD_PATH);
@@ -83,6 +86,7 @@ end
 
 
 function create_subdirs(root_dir::String)
+    root_dir = Pluto.tamepath(root_dir)
     @assert isdir(root_dir)
     input_dir = joinpath(root_dir, "src")
     @assert isdir(input_dir) "Input directory is empty: $(input_dir).\n\nUse PlutoPages in a directory with a 'src' subdirectory. Your notebooks and markdown files go in there."

@@ -54,7 +54,7 @@ function run_with_replacements(notebook_path::AbstractString, inputs::Dict{Symbo
     )
     session = Pluto.ServerSession(;options)
 
-    @info "PlutoPages: Starting Pluto server..."
+    @info "PlutoPages: Starting Pluto notebook..."
     notebook_task = Threads.@spawn try
         notebook = open_notebook_with_replacements!(session, notebook_path, inputs)
 
@@ -90,6 +90,7 @@ function run_with_replacements(notebook_path::AbstractString, inputs::Dict{Symbo
     end
 
     pluto_server_instance = if run_server
+        @info "PlutoPages: Starting Pluto server... \n(Ignore the message 'Go to ... in your browser to start writing.')"
         Pluto.run!(session)
     end
 
