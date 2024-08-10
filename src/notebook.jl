@@ -866,7 +866,7 @@ function process_layouts(page::Page)::Page
 					"page" => page,
 					"collections" => collections,
 					"root_url" => root_url,
-					"metadata" => metadata
+					"metadata" => METADATA
 				),
 			)
 		)
