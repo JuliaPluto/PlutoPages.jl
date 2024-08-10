@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.43
+# v0.19.45
 
 using Markdown
 using InteractiveUtils
@@ -39,6 +39,7 @@ begin
 		copy!(LOAD_PATH, lp)
 	end
 
+	# huh why do we import PlutoPages into itself? That's so that we can load the dependencies of PlutoPages... yay!
 	import PlutoPages
 end
 
@@ -921,6 +922,18 @@ config_json_data = let
 	page === nothing ? Dict{String,Any}() : JSON.parse(SafeString(page.input.contents))
 end
 
+# ╔═╡ bcf1ebd7-c5b7-44c9-9135-c632b4fae1b6
+index_json_from_pss = (
+	isdefined(PlutoSliderServer, :index_json_data) ?
+	PlutoSliderServer.index_json_data :
+	PlutoSliderServer.var"../IndexJSON.jl".json_data
+	)(
+		PlutoSliderServer.NotebookSession[];
+		settings=pluto_deploy_settings, 
+		start_dir="doesnotmatter", 
+		config_data=config_json_data
+	)
+
 # ╔═╡ 52fc3e5e-21a6-4357-9e63-8a70a6e6deb8
 function index_json_data(page::Page)
 	r(s) = replace(s, root_url => ".")
@@ -941,15 +954,9 @@ index_json = let
 		haskey(page.output.frontmatter, "plutopages_statefile_url")
 	end
 	
-	(
+	(;
+		index_json_from_pss...,
 		notebooks=Dict(page.url => index_json_data(page) for page in nbz),
-		pluto_version=lstrip(Pluto.PLUTO_VERSION_STR, 'v'),
-		julia_version=lstrip(string(VERSION), 'v'),
-		format_version="1",
-	
-		title=get(config_json_data, "title", nothing),
-		description=get(config_json_data, "description", nothing),
-		collections=get(config_json_data, "collections", nothing),
 	)
 end
 
@@ -1102,6 +1109,7 @@ end
 # ╟─6460cf11-ae78-47e3-9ac1-649295e76ddc
 # ╟─52fc3e5e-21a6-4357-9e63-8a70a6e6deb8
 # ╟─608ed895-3a62-4c11-8026-40120ab05af1
+# ╟─bcf1ebd7-c5b7-44c9-9135-c632b4fae1b6
 # ╟─d7a01c06-7174-4e6d-b02d-79c953ecdb79
 # ╠═7ed02eaa-9d88-4faa-a61f-bf1d1f748fce
 # ╟─1a303aa4-bed5-4d9b-855c-23355f4a88fe
