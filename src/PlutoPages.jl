@@ -170,6 +170,7 @@ function generate(;
     input_dir::String, 
     output_dir::String, 
     cache_dir::String,
+    html_report_path::Union{Nothing,String}=tempname()*"_generation_report.html",
 )
     app = run_plutopages_notebook(; input_dir, output_dir, cache_dir, run_server=false)
     notebook = fetch(app.notebook_task)
@@ -178,15 +179,21 @@ function generate(;
     for c in notebook.cells
         if c.errored
             bad = true
-            @error("Cell errored", c.code, c.output.body)
+            @error("Cell errored", c.code, c.cell_id, Text(c.output.body))
         end
     end
-    if bad
-        error("Error in notebook")
+    
+    if html_report_path !== nothing
+        write(html_report_path, Pluto.generate_html(notebook))
+        @info "PlutoPages: 📄 HTML report written to:\n\n$(html_report_path)\n"
     end
     
     @info "PlutoPages: cleaning up..."
     shutdown(app)
+    
+    if bad
+        error("Error in notebook, see previous logs. $(html_report_path === nothing ? "You can debug this better with an HTML report, check out the `html_report_path` kwarg." : "Read more in the HTML report:\n$(html_report_path)\n")")
+    end
     
     return output_dir
 end
