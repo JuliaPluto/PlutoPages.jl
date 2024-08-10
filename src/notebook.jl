@@ -417,6 +417,19 @@ md"""
 # ╔═╡ c52c9786-a25f-11ec-1fdc-9b13922d7ccb
 const input_dir = joinpath(@__DIR__, "src")
 
+# ╔═╡ c82716c0-02bd-4f04-b0be-2b08abf634c1
+begin
+	# read metadata if present
+	const METADATA = Dict()
+	metapath = joinpath(input_dir, "_data")
+	if isdir(metapath)
+		for data_file in readdir(metapath; join=true)
+			key = splitext(basename(data_file))[1]
+			METADATA[key] = include(data_file)
+		end
+	end
+end
+
 # ╔═╡ cf27b3d3-1689-4b3a-a8fe-3ad639eb2f82
 md"""
 ## File watching
@@ -853,6 +866,7 @@ function process_layouts(page::Page)::Page
 					"page" => page,
 					"collections" => collections,
 					"root_url" => root_url,
+					"metadata" => METADATA
 				),
 			)
 		)
@@ -1078,6 +1092,7 @@ end
 # ╠═f93da14a-e4c8-4c28-ab01-4a5ba1a3cf47
 # ╠═41ab51f9-0b33-4548-b08a-ad1ef7d38f1b
 # ╟─b0006e61-b037-41ed-a3e4-9962d15584c4
+# ╠═c82716c0-02bd-4f04-b0be-2b08abf634c1
 # ╠═c2ee20be-16f5-47a8-851a-67a361bb0316
 # ╠═06edb2d7-325f-4f80-8c55-dc01c7783054
 # ╟─f2fbcc70-a714-4eda-8786-7ee5692e3268
