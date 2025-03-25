@@ -9,7 +9,6 @@ $(begin
             # r"<script[^\n]data-pluto-file=[\"']?launch-parameters.*?/script>"s
             r"<title.*?/title>"
             r"<meta name=[\"']?description.*?>"
-            r"<meta name=[\"']?description.*?>"
             r"<link rel=[\"']?icon.*?>"
         ]; init=m[1]) do s,r
             replace(s, r => "")
