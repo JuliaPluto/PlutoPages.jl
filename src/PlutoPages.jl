@@ -112,6 +112,7 @@ const isolated_cell_ids = (
     "079a6399-50eb-4dee-a36d-b3dcb81c8456",
     "b0006e61-b037-41ed-a3e4-9962d15584c4",
     "06edb2d7-325f-4f80-8c55-dc01c7783054",
+    "9845db00-149c-45be-9e4f-55d1157afc87",
     "e0a25f24-a7de-4eac-9f88-cb7632de09eb",
 )
 const isolated_cell_query = join("&isolated_cell_id=$(i)" for i in isolated_cell_ids)

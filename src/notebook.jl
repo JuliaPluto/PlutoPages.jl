@@ -760,11 +760,10 @@ end
 
 # ╔═╡ 079a6399-50eb-4dee-a36d-b3dcb81c8456
 template_results = let
-	# delete any old files
-	for f in readdir(output_dir)
-		rm(joinpath(output_dir, f); recursive=true)
+	if isdir(joinpath(output_dir, "generated_assets"))
+		rm(joinpath(output_dir, "generated_assets"); recursive=true)
 	end
-
+	
 	# let's go! running all the template handlers
 	progressmap_async(allfiles; ntasks=NUM_PARALLEL_WORKERS) do f
 		absolute_path = joinpath(input_dir, f)
@@ -956,22 +955,52 @@ write(
 )
 
 # ╔═╡ 9845db00-149c-45be-9e4f-55d1157afc87
-process_results = map(rendered_results) do page
-	input = page.input
-	output = page.output
-	
-	if output !== nothing && output.contents !== nothing
-		
-		# TODO: use front matter for permalink
-
-		output_path2 = joinpath(output_dir, page.full_url)
-		mkpath(output_path2 |> dirname)
-		# Our magic root url:
-		# in Julia, you can safely call `String` and `replace` on arbitrary, non-utf8 data :)
-		write(output_path2, 
-			replace(SafeString(output.contents), root_url => relpath(output_dir, output_path2 |> dirname))
-		)
+process_results = let
+	old_paths = map(readdir(output_dir)) do f
+		joinpath(output_dir, f)
 	end
+	
+	# create the new files
+	write_outputs = map(rendered_results) do page
+		input = page.input
+		output = page.output
+		
+		if output !== nothing && output.contents !== nothing
+			
+			# TODO: use front matter for permalink
+
+			output_path = joinpath(output_dir, page.full_url)
+			mkpath(output_path |> dirname)
+			# Our magic root url:
+			# in Julia, you can safely call `String` and `replace` on arbitrary, non-utf8 data :)
+			write(output_path, 
+				replace(SafeString(output.contents), root_url => relpath(output_dir, output_path |> dirname))
+			)
+			
+			output_path
+		end
+	end
+	new_paths = filter(!isnothing, write_outputs)
+	
+	to_delete = filter(old_paths) do f
+		if occursin("generated_assets", f)
+			false
+		elseif isfile(f)
+			f ∉ new_paths
+		elseif isdir(f)
+			!any(new_paths) do p
+				startswith(p, joinpath(f, ""))
+			end
+		else
+			true
+		end
+	end
+	# delete any old files
+	for f in to_delete
+		rm(f; recursive=true)
+	end
+	
+	write_outputs
 end
 
 # ╔═╡ 70fa9af8-31f9-4e47-b36b-828c88166b3d
