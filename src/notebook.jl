@@ -370,6 +370,13 @@ function template_handler(::Union{
 		Val{Symbol(".svg")},
 		Val{Symbol(".gif")},
 		Val{Symbol(".json")},
+		Val{Symbol(".mov")},
+		Val{Symbol(".mp4")},
+		Val{Symbol(".webm")},
+		Val{Symbol(".wav")},
+		Val{Symbol(".mp3")},
+		Val{Symbol(".ogg")},
+		Val{Symbol(".webp")},
 	}, input::TemplateInput)::TemplateOutput
 
 	TemplateOutput(;
