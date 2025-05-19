@@ -2,8 +2,7 @@ $(begin
     import Pluto
     "The contents of `<head>` from a Pluto HTML export."
     const pluto_head = let
-        default = Pluto.generate_html(; 
-            pluto_cdn_root=Pluto.PLUTO_VERSION < v"0.19" ? "https://cdn.jsdelivr.net/gh/fonsp/Pluto.jl@9ca70c36/frontend/" : nothing)
+        default = Pluto.generate_html()
         m = match(r"<head.*?>(.*)</head>"s, default)
         reduce([
             # r"<script[^\n]data-pluto-file=[\"']?launch-parameters.*?/script>"s
