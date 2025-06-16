@@ -24,5 +24,9 @@ using Test
     @test isfile(joinpath(dirs.output_dir, "en", "blog", "something", "index.html"))
     @test isfile(joinpath(dirs.output_dir, "en", "blog", "yayy", "index.html"))
     
+    @test isfile(joinpath(dirs.output_dir, "pp_search_data.json"))
+    @test isfile(joinpath(dirs.output_dir, "pluto_export.json"))
+    
+    
     @test isfile(html_report_path)
 end

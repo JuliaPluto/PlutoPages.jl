@@ -1,17 +1,19 @@
 ### A Pluto.jl notebook ###
-# v0.19.45
+# v0.20.9
 
 using Markdown
 using InteractiveUtils
 
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
-    quote
+    #! format: off
+    return quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
+    #! format: on
 end
 
 # ╔═╡ 658b1b24-a7b2-47ab-ba53-b570dfeb8bfa
@@ -905,12 +907,6 @@ collected_search_index_data = [
 	for page in rendered_results if page.output.search_index_data !== nothing
 ]
 
-# ╔═╡ 1be06e4b-6072-46c3-a63d-aa95e51c43b4
-write(
-	joinpath(output_dir, "pp_search_data.json"), 
-	JSON.json(collected_search_index_data)
-)
-
 # ╔═╡ 608ed895-3a62-4c11-8026-40120ab05af1
 config_json_data = let
 	page = find(p -> basename(p.url) == "pluto_export_configuration.json", rendered_results)
@@ -955,12 +951,6 @@ index_json = let
 	)
 end
 
-# ╔═╡ 7ed02eaa-9d88-4faa-a61f-bf1d1f748fce
-write(
-	joinpath(output_dir, "pluto_export.json"), 
-	JSON.json(index_json)
-)
-
 # ╔═╡ 9845db00-149c-45be-9e4f-55d1157afc87
 process_results = let
 	old_paths = map(readdir(output_dir)) do f
@@ -988,6 +978,16 @@ process_results = let
 		end
 	end
 	new_paths = filter(!isnothing, write_outputs)
+
+	# write the extra json files
+	for (p,d) in [
+		("pluto_export.json", index_json),
+		("pp_search_data.json", collected_search_index_data),
+	]
+		output_path = joinpath(output_dir, p)
+		push!(new_paths, output_path)
+		write(output_path, JSON.json(d))
+	end
 	
 	to_delete = filter(old_paths) do f
 		if occursin("generated_assets", f)
@@ -1125,10 +1125,8 @@ end
 # ╟─608ed895-3a62-4c11-8026-40120ab05af1
 # ╟─bcf1ebd7-c5b7-44c9-9135-c632b4fae1b6
 # ╟─d7a01c06-7174-4e6d-b02d-79c953ecdb79
-# ╠═7ed02eaa-9d88-4faa-a61f-bf1d1f748fce
 # ╟─1a303aa4-bed5-4d9b-855c-23355f4a88fe
-# ╠═1be06e4b-6072-46c3-a63d-aa95e51c43b4
-# ╠═9845db00-149c-45be-9e4f-55d1157afc87
+# ╟─9845db00-149c-45be-9e4f-55d1157afc87
 # ╟─eef54261-767a-4ce4-b549-0b1828379f7e
 # ╟─cda8689d-9ae5-42c4-8e7e-715cf44c33bb
 # ╟─4013400c-acb4-40fa-a826-fd0cbae09e7e
