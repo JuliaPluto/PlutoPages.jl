@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.9
+# v0.20.14
 
 using Markdown
 using InteractiveUtils
@@ -311,7 +311,6 @@ function run_mdx(s::String;
 	else
 	
 		# we want to apply our own CM parser, so we do the MarkdownLiteral.jl trick manually:
-		result_str = repr(MIME"text/html"(), result)
 		cm_parser = CommonMark.Parser()
 	    CommonMark.enable!(cm_parser, [
 	        CommonMark.AdmonitionRule(),
@@ -328,6 +327,7 @@ function run_mdx(s::String;
 	        CommonMark.FrontMatterRule(yaml=YAML.load),
 	    ])
 	
+		result_str = repr(MIME"text/html"(), result)
 		ast = cm_parser(result_str)
 
 		ast, CommonMark.frontmatter(ast)
