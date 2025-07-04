@@ -901,6 +901,7 @@ collected_search_index_data = [
 			page.output.frontmatter, "title", 
 			splitext(basename(page.input.relative_path))[1]
 		)::String,
+		description=string(get(page.output.frontmatter, "description", "")),
 		tags=get(page.output.frontmatter, "tags", String[]),
 		text=page.output.search_index_data,
 	)
