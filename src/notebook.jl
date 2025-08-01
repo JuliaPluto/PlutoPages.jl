@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.14
+# v0.20.13
 
 using Markdown
 using InteractiveUtils
@@ -34,7 +34,9 @@ begin
 	eval(:(import Pkg))
 	
 	if override_ap_lp === nothing
+		# Then you are reading this notebook in Pluto, and you are a developer of the PlutoPages package (right??)
 		Pkg.activate(dirname(@__DIR__))
+		Pkg.instantiate()
 	else
 		ap, lp = override_ap_lp
 		Pkg.activate(ap)
@@ -425,6 +427,19 @@ md"""
 
 # ╔═╡ c52c9786-a25f-11ec-1fdc-9b13922d7ccb
 const input_dir = joinpath(@__DIR__, "src")
+
+# ╔═╡ 7237a468-538e-4131-a4e2-2da5fad8e963
+"""Convert URL path using `/` separators to OS-specific path."""
+function to_local_path(s::AbstractString)
+    Sys.iswindows() ? replace(s, '/' => '\\') : s
+end
+
+
+# ╔═╡ 86e5f9a5-e3bd-4725-87e4-19100fdc739c
+"""Convert a local path to URL form with `/` separators."""
+function to_url_path(s::AbstractString)
+    Sys.iswindows() ? replace(s, '\\' => '/') : s
+end
 
 # ╔═╡ cf27b3d3-1689-4b3a-a8fe-3ad639eb2f82
 md"""
@@ -1084,6 +1099,8 @@ end
 # ╟─f6b89b8c-3750-4dd2-940e-579be953c1c2
 # ╟─29a81ad7-3803-4b7a-98ca-6e5b1077e1c7
 # ╠═c52c9786-a25f-11ec-1fdc-9b13922d7ccb
+# ╟─7237a468-538e-4131-a4e2-2da5fad8e963
+# ╟─86e5f9a5-e3bd-4725-87e4-19100fdc739c
 # ╟─cf27b3d3-1689-4b3a-a8fe-3ad639eb2f82
 # ╟─7f7f1981-978d-4861-b840-71ab611faf74
 # ╟─7d9cb939-da6b-4961-9584-a905ad453b5d
