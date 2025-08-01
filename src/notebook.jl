@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.14
+# v0.20.13
 
 using Markdown
 using InteractiveUtils
@@ -34,7 +34,9 @@ begin
 	eval(:(import Pkg))
 	
 	if override_ap_lp === nothing
+		# Then you are reading this notebook in Pluto, and you are a developer of the PlutoPages package (right??)
 		Pkg.activate(dirname(@__DIR__))
+		Pkg.instantiate()
 	else
 		ap, lp = override_ap_lp
 		Pkg.activate(ap)
@@ -426,6 +428,19 @@ md"""
 # ╔═╡ c52c9786-a25f-11ec-1fdc-9b13922d7ccb
 const input_dir = joinpath(@__DIR__, "src")
 
+# ╔═╡ 7237a468-538e-4131-a4e2-2da5fad8e963
+"""Convert URL path using `/` separators to OS-specific path."""
+function to_local_path(s::AbstractString)
+    Sys.iswindows() ? replace(s, '/' => '\\') : s
+end
+
+
+# ╔═╡ 86e5f9a5-e3bd-4725-87e4-19100fdc739c
+"""Convert a local path to URL form with `/` separators."""
+function to_url_path(s::AbstractString)
+    Sys.iswindows() ? replace(s, '\\' => '/') : s
+end
+
 # ╔═╡ cf27b3d3-1689-4b3a-a8fe-3ad639eb2f82
 md"""
 ## File watching
@@ -443,7 +458,7 @@ const this_file = split(@__FILE__, "#==#")[1]
 
 # ╔═╡ d38dc2aa-d5ba-4cf7-9f9e-c4e4611a57ac
 function ignore(abs_path; allow_special_dirs::Bool=false)
-	p = relpath(abs_path, input_dir)
+	p = to_url_path(relpath(abs_path, input_dir))
 
 	# (_cache, _site, _andmore)
 	any(x -> ignored_dirname(x; allow_special_dirs), splitpath(p)) || 
@@ -563,14 +578,15 @@ function final_url(input::TemplateInput, output::TemplateOutput)::String
 		in_dir, in_filename = splitdir(input.relative_path)
 		in_name, in_ext = splitext(in_filename)
 
-		if in_name == "index"
+		local_path = if in_name == "index"
 			joinpath(in_dir, "index.html")
 		else
 			joinpath(in_dir, in_name, "index.html")
 		end
+		to_url_path(local_path)
 	else
 		ext = lstrip(isequal('.'), output.file_extension)
-		join((splitext(input.relative_path)[1], ".", ext))
+		join((splitext(input.relative_path)[1], ".", ext)) |> to_url_path
 	end
 end
 
@@ -701,7 +717,7 @@ function register_asset(contents, original_name::String)
 	mkpath(joinpath(output_dir, "generated_assets"))
 	newpath = joinpath(output_dir, "generated_assets", "$(legalize(n))_$(h)$(e)")
 	write(newpath, contents)
-	rel = relpath(newpath, output_dir)
+	rel = to_url_path(relpath(newpath, output_dir))
 	return RegisteredAsset(joinpath(root_url, rel), rel, newpath)
 end
 
@@ -780,7 +796,7 @@ template_results = let
 		input = TemplateInput(;
 			contents=read(absolute_path),
 			absolute_path,
-			relative_path=f,
+			relative_path=to_url_path(f),
 			frontmatter=FrontMatter(
 				"root_url" => root_url,
 			),
@@ -854,7 +870,7 @@ function process_layouts(page::Page)::Page
 		input = TemplateInput(;
 			contents=read(layout_file),
 			absolute_path=layout_file,
-			relative_path=relpath(layout_file, input_dir),
+			relative_path=to_url_path(relpath(layout_file, input_dir)),
 			frontmatter=merge(output.frontmatter, 
 				FrontMatter(
 					"content" => content,
@@ -967,12 +983,12 @@ process_results = let
 			
 			# TODO: use front matter for permalink
 
-			output_path = joinpath(output_dir, page.full_url)
+			output_path = joinpath(output_dir, to_url_path(page.full_url))
 			mkpath(output_path |> dirname)
 			# Our magic root url:
 			# in Julia, you can safely call `String` and `replace` on arbitrary, non-utf8 data :)
 			write(output_path, 
-				replace(SafeString(output.contents), root_url => relpath(output_dir, output_path |> dirname))
+				replace(SafeString(output.contents), root_url => to_url_path(relpath(output_dir, output_path |> dirname)))
 			)
 			
 			output_path
@@ -1084,6 +1100,8 @@ end
 # ╟─f6b89b8c-3750-4dd2-940e-579be953c1c2
 # ╟─29a81ad7-3803-4b7a-98ca-6e5b1077e1c7
 # ╠═c52c9786-a25f-11ec-1fdc-9b13922d7ccb
+# ╟─7237a468-538e-4131-a4e2-2da5fad8e963
+# ╟─86e5f9a5-e3bd-4725-87e4-19100fdc739c
 # ╟─cf27b3d3-1689-4b3a-a8fe-3ad639eb2f82
 # ╟─7f7f1981-978d-4861-b840-71ab611faf74
 # ╟─7d9cb939-da6b-4961-9584-a905ad453b5d
