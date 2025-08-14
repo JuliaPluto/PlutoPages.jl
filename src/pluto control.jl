@@ -1,3 +1,13 @@
+### What this file does:
+# All the functionality of PlutoPages was implemented in a notebook! (The file notebook.jl in this directory.) Because it's fun and easy to develop the package this way, kind of.
+# 
+# But when you import PlutoPages and run PlutoPages.generate(), you don't want to open Pluto in your browser, fill in a path in a TextField, etc. It needs to run that notebook "headless" (no browser), with different values inserted by the user.
+# The important value to insert is the "source directory"
+# This is what replace_definitions! does. It finds the cell that defines a variable (using PlutoDependencyExplorer.jl), and replaces its code by `const $(name) = $(repr(value))`, and does a reactive run.
+# 
+# And why not just run the notebook.jl like a Julia file? For the one-off site generation that would be fine. But for PlutoPages.develop() this is very cool! Because we can use Pluto's reactivity to update the site when files update, in a fast way.
+
+
 import Pluto: Pluto, PlutoDependencyExplorer
 
 
