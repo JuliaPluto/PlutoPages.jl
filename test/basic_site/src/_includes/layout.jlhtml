@@ -17,7 +17,7 @@ $(begin
 end)<html lang="en">
 <head>
 
-$(Pluto.frontmatter_html(page.output.frontmatter))
+$(Pluto.frontmatter_html(page.output.frontmatter) |> HTML)
 
 <link rel="icon" href="$(root_url)/assets/favicon.ico" />
 <link rel="icon" href="$(root_url)/assets/favicon.svg" type="image/svg+xml">
