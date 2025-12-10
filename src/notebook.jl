@@ -927,7 +927,7 @@ collected_search_index_data = [
 # ╔═╡ 608ed895-3a62-4c11-8026-40120ab05af1
 config_json_data = let
 	page = find(p -> basename(p.url) == "pluto_export_configuration.json", rendered_results)
-	page === nothing ? Dict{String,Any}() : JSON.parse(SafeString(page.input.contents))
+	page === nothing ? Dict{String,Any}() : JSON.parse(SafeString(page.input.contents); dicttype=Dict{String, Any})
 end
 
 # ╔═╡ bcf1ebd7-c5b7-44c9-9135-c632b4fae1b6
