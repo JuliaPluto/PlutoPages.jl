@@ -30,7 +30,7 @@ YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 
 [compat]
 BetterFileWatching = "0.1"
-CommonMark = "0.8, 0.9, 0.10"
+CommonMark = "0.8, 0.9, 0.10, 1.0"
 Gumbo = "0.8"
 HypertextLiteral = "0.9, 1.0"
 InteractiveUtils = "1"
