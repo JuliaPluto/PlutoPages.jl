@@ -44,9 +44,9 @@ Notebook outputs are **cached** (for a long time) by the file hash. This means t
 
 Web assets go through the system unchanged.
 
-# Front matter
+# Frontmatter
 
-Like many SSG systems, we use [*front matter*](https://www.11ty.dev/docs/data-frontmatter/) to add metadata to pages. In `.jlmd` files, this is done with a front matter block, e.g.:
+Like many SSG systems, we use [*frontmatter*](https://www.11ty.dev/docs/data-frontmatter/) to add metadata to pages. In `.jlmd` files, this is done with a frontmatter block, e.g.:
 ```markdown
 ---
 title: "🌼 How to install"
@@ -66,10 +66,10 @@ Every page **should probably** include:
 - *`tags`*: List of *tags* that are used to create collections out of pages. Our sidebar uses collections to know which pages to list. (more details in `sidebar data.jl`)
 - *`layout`*: The name of a layout file in `src/_includes`. For basic Markdown or HTML, you probably want `md.jlmd`. For Pluto, you should use `layout.jlhtml`.
 
-## How to write front matter
+## How to write frontmatter
 For `.jlmd` files, see the example above. 
 
-For `.jl` notebooks, use the [Frontmatter GUI](https://github.com/fonsp/Pluto.jl/pull/2104) built into Pluto.
+For `.jl` notebooks, use the [Frontmatter GUI](https://plutojl.org/en/docs/frontmatter/) built into Pluto.
 
 For `.jlhtml`, we still need to figure something out 😄.
 

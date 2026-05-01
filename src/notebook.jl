@@ -293,7 +293,7 @@ end
 
 # ╔═╡ 692c1e0b-07e1-41b3-abcd-2156bda65b41
 """
-Turn a MarkdownLiteral.jl string into HTML contents and front matter.
+Turn a MarkdownLiteral.jl string into HTML contents and frontmatter.
 """
 function run_mdx(s::String; 
 		data::Dict{String,<:Any}=Dict{String,Any}(),
@@ -332,7 +332,7 @@ function run_mdx(s::String;
 	        CommonMark.RawContentRule(),
 	        CommonMark.TableRule(),
 	        CommonMark.TypographyRule(),
-			# TODO: allow Julia in front matter by using Meta.parse as the TOML parser?
+			# TODO: allow Julia in frontmatter by using Meta.parse as the TOML parser?
 			# but you probably want to be able to use those variables inside the document, so they have to be evaluated *before* running the expr.
 	        CommonMark.FrontMatterRule(yaml=YAML.load),
 	    ])
@@ -1017,7 +1017,7 @@ process_results = let
 		
 		if output !== nothing && output.contents !== nothing
 			
-			# TODO: use front matter for permalink
+			# TODO: use frontmatter for permalink
 
 			output_path = joinpath(output_dir, to_url_path(page.full_url))
 			mkpath(output_path |> dirname)
