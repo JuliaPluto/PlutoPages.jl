@@ -1,0 +1,10 @@
+---
+title: "🙋 Frontmatter"
+tags: ["docs", "introduction"]
+layout: "frontmatter_data_test.jlhtml"
+awesomeness: 999
+---
+
+# Frontmatter data
+
+Layouts can use data from document frontmatter as global Julia variables.

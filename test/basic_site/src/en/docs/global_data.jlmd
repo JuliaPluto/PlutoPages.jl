@@ -1,0 +1,17 @@
+---
+title: "Global dataaa"
+tags: ["docs", "introduction"]
+layout: "global_data_test.jlhtml"
+---
+
+# Global data:
+
+This should be 1 to 6: $(test123)
+
+This should be a Dict with keys `dict` and `nice`:
+
+$(sub)
+
+Perfect! Here is `nice`: $(sub["nice"])
+
+Global data can also be a function! 555 + 666 = $(add(555,666))

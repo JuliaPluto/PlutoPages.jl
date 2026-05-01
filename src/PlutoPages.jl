@@ -103,15 +103,26 @@ function develop(root_dir::String; kwargs...)
 end
 
 
-
+# These are cells from the notebook that we want to display in the dashboard. All cells will run, but only these cells will show in the generation dashboard. So here, we should show all cells that could possibly error, so that errors are visible to the user.
 const isolated_cell_ids = (
+    # File watching
     "cf27b3d3-1689-4b3a-a8fe-3ad639eb2f82",
     "7f7f1981-978d-4861-b840-71ab611faf74",
     "7d9cb939-da6b-4961-9584-a905ad453b5d",
+    
+    # Global data
+    "580396dc-f7ad-4baa-8ff7-783aa358a9b6",
+    "fb7123c3-6ee1-4370-8dc4-6e134786c414",
+    
+    # Running the templates
     "4e88cf07-8d85-4327-b310-6c71ba951bba",
     "079a6399-50eb-4dee-a36d-b3dcb81c8456",
+    
+    # Layouts
     "b0006e61-b037-41ed-a3e4-9962d15584c4",
     "06edb2d7-325f-4f80-8c55-dc01c7783054",
+    
+    # Writing to the output directory
     "9845db00-149c-45be-9e4f-55d1157afc87",
     "e0a25f24-a7de-4eac-9f88-cb7632de09eb",
 )
