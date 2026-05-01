@@ -556,9 +556,11 @@ global_data = let
 			rel = relpath(rootpath, global_data_dir)
 			s = global_data_dir == rootpath ? String[] : splitpath(rel)
 			for f in sort(files)
-				key = splitext(basename(f))[1]
-				data = read_data_file(joinpath(rootpath, f))
-				set_deep!(res, [s..., key], data)
+				if endswith(f, ".jl")
+					key = splitext(basename(f))[1]
+					data = read_data_file(joinpath(rootpath, f))
+					set_deep!(res, [s..., key], data)
+				end
 			end
 		end
 	end
@@ -1150,7 +1152,7 @@ end
 # ╟─580396dc-f7ad-4baa-8ff7-783aa358a9b6
 # ╟─594dc5a4-6bde-455c-98cb-619acfee0999
 # ╠═eeae4ef7-219a-4dce-92e1-428e705e8ae7
-# ╟─fb7123c3-6ee1-4370-8dc4-6e134786c414
+# ╠═fb7123c3-6ee1-4370-8dc4-6e134786c414
 # ╟─a87f5a2c-f4cf-4a05-b5cc-96d0e936c737
 # ╟─9cd93caf-2730-4024-a2e2-d19efd32e349
 # ╟─4e88cf07-8d85-4327-b310-6c71ba951bba
