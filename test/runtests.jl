@@ -7,7 +7,7 @@ using Test
     
     dirs = PlutoPages.create_subdirs(input_dir)
     
-    html_report_path = tempname(cleanup=false)
+    html_report_path = tempname(cleanup=false) * ".html"
     
     result = PlutoPages.generate(; dirs..., html_report_path)
     @test result == dirs.output_dir
@@ -21,6 +21,7 @@ using Test
     @test isfile(joinpath(dirs.output_dir, "htmlpage", "index.html"))
     @test isfile(joinpath(dirs.output_dir, "en", "docs", "index.html"))
     @test isfile(joinpath(dirs.output_dir, "en", "docs", "packages", "index.html"))
+    @test isfile(joinpath(dirs.output_dir, "en", "docs", "global_data", "index.html"))
     @test isfile(joinpath(dirs.output_dir, "en", "blog", "something", "index.html"))
     @test isfile(joinpath(dirs.output_dir, "en", "blog", "yayy", "index.html"))
     
@@ -29,4 +30,22 @@ using Test
     
     
     @test isfile(html_report_path)
+    
+    @testset "Global data" begin
+        
+        h = read(joinpath(dirs.output_dir, "en", "docs", "global_data", "index.html"), String)
+        
+        @test occursin("123456", h)
+        @test occursin("55", h)
+        @test occursin("Dict{String,", h)
+        @test occursin("98989898", h) # layout_data
+        @test occursin("1221", h) # 555 + 666
+        
+    end
+    
+    @testset "Frontmatter data" begin
+        h = read(joinpath(dirs.output_dir, "en", "docs", "frontmatter_data", "index.html"), String)
+        
+        @test occursin("999", h)
+    end
 end

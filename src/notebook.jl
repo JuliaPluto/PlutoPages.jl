@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.13
+# v0.20.24
 
 using Markdown
 using InteractiveUtils
@@ -81,8 +81,16 @@ begin
 	import Logging, SHA, Unicode
 end
 
+# ╔═╡ a87f5a2c-f4cf-4a05-b5cc-96d0e936c737
+# assue that it is a .jl file that defines data
+read_data_file(path) = include(path)
+
 # ╔═╡ 2b7d1ee2-0f71-4091-aec2-cde62d2b6b36
 md"""
+> This is the source code of PlutoPages.jl.
+> 
+> Run this notebook with Pluto, using Julia LTS.
+
 # Package imports
 """
 
@@ -425,21 +433,11 @@ md"""
 # Input folder
 """
 
-# ╔═╡ c52c9786-a25f-11ec-1fdc-9b13922d7ccb
-const input_dir = joinpath(@__DIR__, "src")
+# ╔═╡ 840ce3c4-6b5a-40d5-afba-61e745e4ccfd
+@bind current_dir confirm(TextField(50; default=@__DIR__))
 
-# ╔═╡ c82716c0-02bd-4f04-b0be-2b08abf634c1
-begin
-	# read metadata if present
-	const METADATA = Dict()
-	metapath = joinpath(input_dir, "_data")
-	if isdir(metapath)
-		for data_file in readdir(metapath; join=true)
-			key = splitext(basename(data_file))[1]
-			METADATA[key] = include(data_file)
-		end
-	end
-end
+# ╔═╡ c52c9786-a25f-11ec-1fdc-9b13922d7ccb
+const input_dir = joinpath(current_dir, "src")
 
 # ╔═╡ 7237a468-538e-4131-a4e2-2da5fad8e963
 """Convert URL path using `/` separators to OS-specific path."""
@@ -520,34 +518,52 @@ md"""
 """
 
 # ╔═╡ e01ebbab-dc9a-4aaf-ae16-200d171fcbd9
-const output_dir = mkpath(joinpath(@__DIR__, "_site"))
-
-# ╔═╡ 37b2cecc-e4c7-4b80-b7d9-71c68f3c0339
-
+const output_dir = mkpath(joinpath(current_dir, "_site"))
 
 # ╔═╡ 7a95681a-df77-408f-919a-2bee5afd7777
 # This directory can be used to store cache files that are persisted between builds. Currently used as PlutoSliderServer.jl cache.
-const cache_dir = mkpath(joinpath(@__DIR__, "_cache"))
+const cache_dir = mkpath(joinpath(current_dir, "_cache"))
 
-# ╔═╡ f3d225b8-b9a5-4639-97eb-7785b1a78f5a
+# ╔═╡ 580396dc-f7ad-4baa-8ff7-783aa358a9b6
 md"""
-## Running a dev web server
+## Reading global data
 """
 
-# ╔═╡ c3a495c1-3e1f-42a1-ac08-8dc0b9175fe9
-# import PlutoPages.Deno_jll
+# ╔═╡ 594dc5a4-6bde-455c-98cb-619acfee0999
+md"""
+Modeled after [https://www.11ty.dev/docs/data-global/](https://www.11ty.dev/docs/data-global/).
+"""
 
-# ╔═╡ 3b2d1919-41d9-4bba-9774-c8497bba5003
-# dev_server_port = 4507
+# ╔═╡ eeae4ef7-219a-4dce-92e1-428e705e8ae7
+const global_data_dir = mkpath(joinpath(input_dir, "_data"))
 
-# ╔═╡ 6f7f66e8-ed10-4cc4-8672-a06861111aec
-# dev_server_url = "http://localhost:$(dev_server_port)/"
+# ╔═╡ 9cd93caf-2730-4024-a2e2-d19efd32e349
+function set_deep!(root::Dict{String,Any}, path::AbstractVector{String}, value)
+	@assert !isempty(path)
+	if length(path) == 1
+		root[only(path)] = value
+	else
+		d = get!(() -> Dict{String,Any}(), root, first(path))
+		set_deep!(d, path[begin+1:end], value)
+	end
+end
 
-# ╔═╡ d09ee809-33d8-44f8-aa7a-be4b3fdc21eb
-
-
-# ╔═╡ a0a80dce-2199-45b6-b4e9-d4168f520c85
-# @htl("<div style='font-size: 2rem;'>Go to <a href=$(dev_server_url)><code>$(dev_server_url)</code></a> to preview the site.</div>")
+# ╔═╡ fb7123c3-6ee1-4370-8dc4-6e134786c414
+global_data = let
+	res = Dict{String,Any}()
+	if isdir(global_data_dir)
+		for (rootpath, dirs, files) in walkdir(global_data_dir)
+			rel = relpath(rootpath, global_data_dir)
+			s = global_data_dir == rootpath ? String[] : splitpath(rel)
+			for f in sort(files)
+				key = splitext(basename(f))[1]
+				data = read_data_file(joinpath(rootpath, f))
+				set_deep!(res, [s..., key], data)
+			end
+		end
+	end
+	res
+end
 
 # ╔═╡ 4e88cf07-8d85-4327-b310-6c71ba951bba
 md"""
@@ -810,8 +826,11 @@ template_results = let
 			contents=read(absolute_path),
 			absolute_path,
 			relative_path=to_url_path(f),
-			frontmatter=FrontMatter(
-				"root_url" => root_url,
+			frontmatter=merge(
+				global_data,
+				FrontMatter(
+					"root_url" => root_url,
+				),
 			),
 		)
 		
@@ -884,13 +903,14 @@ function process_layouts(page::Page)::Page
 			contents=read(layout_file),
 			absolute_path=layout_file,
 			relative_path=to_url_path(relpath(layout_file, input_dir)),
-			frontmatter=merge(output.frontmatter, 
+			frontmatter=merge(
+				global_data,
+				output.frontmatter, 
 				FrontMatter(
 					"content" => content,
 					"page" => page,
 					"collections" => collections,
 					"root_url" => root_url,
-					"metadata" => METADATA
 				),
 			)
 		)
@@ -1113,6 +1133,7 @@ end
 # ╟─750782a1-3aeb-4816-8f6a-ec31055373c1
 # ╟─f6b89b8c-3750-4dd2-940e-579be953c1c2
 # ╟─29a81ad7-3803-4b7a-98ca-6e5b1077e1c7
+# ╠═840ce3c4-6b5a-40d5-afba-61e745e4ccfd
 # ╠═c52c9786-a25f-11ec-1fdc-9b13922d7ccb
 # ╟─7237a468-538e-4131-a4e2-2da5fad8e963
 # ╟─86e5f9a5-e3bd-4725-87e4-19100fdc739c
@@ -1125,14 +1146,13 @@ end
 # ╠═8da0c249-6094-49ab-9e59-d6e356818651
 # ╟─d314ab46-b866-44c6-bfca-9a413bc06514
 # ╠═e01ebbab-dc9a-4aaf-ae16-200d171fcbd9
-# ╠═37b2cecc-e4c7-4b80-b7d9-71c68f3c0339
-# ╟─7a95681a-df77-408f-919a-2bee5afd7777
-# ╟─f3d225b8-b9a5-4639-97eb-7785b1a78f5a
-# ╠═c3a495c1-3e1f-42a1-ac08-8dc0b9175fe9
-# ╠═3b2d1919-41d9-4bba-9774-c8497bba5003
-# ╠═6f7f66e8-ed10-4cc4-8672-a06861111aec
-# ╠═d09ee809-33d8-44f8-aa7a-be4b3fdc21eb
-# ╟─a0a80dce-2199-45b6-b4e9-d4168f520c85
+# ╠═7a95681a-df77-408f-919a-2bee5afd7777
+# ╟─580396dc-f7ad-4baa-8ff7-783aa358a9b6
+# ╟─594dc5a4-6bde-455c-98cb-619acfee0999
+# ╠═eeae4ef7-219a-4dce-92e1-428e705e8ae7
+# ╟─fb7123c3-6ee1-4370-8dc4-6e134786c414
+# ╟─a87f5a2c-f4cf-4a05-b5cc-96d0e936c737
+# ╟─9cd93caf-2730-4024-a2e2-d19efd32e349
 # ╟─4e88cf07-8d85-4327-b310-6c71ba951bba
 # ╠═f700357f-e21c-4d23-b56c-be4f9c90465f
 # ╠═079a6399-50eb-4dee-a36d-b3dcb81c8456
@@ -1147,7 +1167,6 @@ end
 # ╠═f93da14a-e4c8-4c28-ab01-4a5ba1a3cf47
 # ╠═41ab51f9-0b33-4548-b08a-ad1ef7d38f1b
 # ╟─b0006e61-b037-41ed-a3e4-9962d15584c4
-# ╠═c82716c0-02bd-4f04-b0be-2b08abf634c1
 # ╠═c2ee20be-16f5-47a8-851a-67a361bb0316
 # ╠═06edb2d7-325f-4f80-8c55-dc01c7783054
 # ╟─f2fbcc70-a714-4eda-8786-7ee5692e3268

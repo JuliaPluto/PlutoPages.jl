@@ -1,0 +1,7 @@
+---
+layout: "md.jlhtml"
+---
+
+$(content)
+
+<p>Awesomeness: $(awesomeness)</p>

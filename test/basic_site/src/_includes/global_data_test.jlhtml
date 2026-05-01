@@ -1,0 +1,7 @@
+---
+layout: "md.jlhtml"
+---
+
+$(layout_data)
+
+$(content)
