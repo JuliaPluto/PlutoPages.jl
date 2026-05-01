@@ -1,17 +1,19 @@
 ### A Pluto.jl notebook ###
-# v0.19.45
+# v0.20.13
 
 using Markdown
 using InteractiveUtils
 
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
-    quote
+    #! format: off
+    return quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
+    #! format: on
 end
 
 # ╔═╡ 658b1b24-a7b2-47ab-ba53-b570dfeb8bfa
@@ -32,7 +34,9 @@ begin
 	eval(:(import Pkg))
 	
 	if override_ap_lp === nothing
+		# Then you are reading this notebook in Pluto, and you are a developer of the PlutoPages package (right??)
 		Pkg.activate(dirname(@__DIR__))
+		Pkg.instantiate()
 	else
 		ap, lp = override_ap_lp
 		Pkg.activate(ap)
@@ -309,7 +313,6 @@ function run_mdx(s::String;
 	else
 	
 		# we want to apply our own CM parser, so we do the MarkdownLiteral.jl trick manually:
-		result_str = repr(MIME"text/html"(), result)
 		cm_parser = CommonMark.Parser()
 	    CommonMark.enable!(cm_parser, [
 	        CommonMark.AdmonitionRule(),
@@ -326,6 +329,7 @@ function run_mdx(s::String;
 	        CommonMark.FrontMatterRule(yaml=YAML.load),
 	    ])
 	
+		result_str = repr(MIME"text/html"(), result)
 		ast = cm_parser(result_str)
 
 		ast, CommonMark.frontmatter(ast)
@@ -370,6 +374,13 @@ function template_handler(::Union{
 		Val{Symbol(".svg")},
 		Val{Symbol(".gif")},
 		Val{Symbol(".json")},
+		Val{Symbol(".mov")},
+		Val{Symbol(".mp4")},
+		Val{Symbol(".webm")},
+		Val{Symbol(".wav")},
+		Val{Symbol(".mp3")},
+		Val{Symbol(".ogg")},
+		Val{Symbol(".webp")},
 	}, input::TemplateInput)::TemplateOutput
 
 	TemplateOutput(;
@@ -430,6 +441,19 @@ begin
 	end
 end
 
+# ╔═╡ 7237a468-538e-4131-a4e2-2da5fad8e963
+"""Convert URL path using `/` separators to OS-specific path."""
+function to_local_path(s::AbstractString)
+    Sys.iswindows() ? replace(s, '/' => '\\') : s
+end
+
+
+# ╔═╡ 86e5f9a5-e3bd-4725-87e4-19100fdc739c
+"""Convert a local path to URL form with `/` separators."""
+function to_url_path(s::AbstractString)
+    Sys.iswindows() ? replace(s, '\\' => '/') : s
+end
+
 # ╔═╡ cf27b3d3-1689-4b3a-a8fe-3ad639eb2f82
 md"""
 ## File watching
@@ -447,7 +471,7 @@ const this_file = split(@__FILE__, "#==#")[1]
 
 # ╔═╡ d38dc2aa-d5ba-4cf7-9f9e-c4e4611a57ac
 function ignore(abs_path; allow_special_dirs::Bool=false)
-	p = relpath(abs_path, input_dir)
+	p = to_url_path(relpath(abs_path, input_dir))
 
 	# (_cache, _site, _andmore)
 	any(x -> ignored_dirname(x; allow_special_dirs), splitpath(p)) || 
@@ -567,14 +591,15 @@ function final_url(input::TemplateInput, output::TemplateOutput)::String
 		in_dir, in_filename = splitdir(input.relative_path)
 		in_name, in_ext = splitext(in_filename)
 
-		if in_name == "index"
+		local_path = if in_name == "index"
 			joinpath(in_dir, "index.html")
 		else
 			joinpath(in_dir, in_name, "index.html")
 		end
+		to_url_path(local_path)
 	else
 		ext = lstrip(isequal('.'), output.file_extension)
-		join((splitext(input.relative_path)[1], ".", ext))
+		join((splitext(input.relative_path)[1], ".", ext)) |> to_url_path
 	end
 end
 
@@ -705,7 +730,7 @@ function register_asset(contents, original_name::String)
 	mkpath(joinpath(output_dir, "generated_assets"))
 	newpath = joinpath(output_dir, "generated_assets", "$(legalize(n))_$(h)$(e)")
 	write(newpath, contents)
-	rel = relpath(newpath, output_dir)
+	rel = to_url_path(relpath(newpath, output_dir))
 	return RegisteredAsset(joinpath(root_url, rel), rel, newpath)
 end
 
@@ -773,11 +798,10 @@ end
 
 # ╔═╡ 079a6399-50eb-4dee-a36d-b3dcb81c8456
 template_results = let
-	# delete any old files
-	for f in readdir(output_dir)
-		rm(joinpath(output_dir, f); recursive=true)
+	if isdir(joinpath(output_dir, "generated_assets"))
+		rm(joinpath(output_dir, "generated_assets"); recursive=true)
 	end
-
+	
 	# let's go! running all the template handlers
 	progressmap_async(allfiles; ntasks=NUM_PARALLEL_WORKERS) do f
 		absolute_path = joinpath(input_dir, f)
@@ -785,7 +809,7 @@ template_results = let
 		input = TemplateInput(;
 			contents=read(absolute_path),
 			absolute_path,
-			relative_path=f,
+			relative_path=to_url_path(f),
 			frontmatter=FrontMatter(
 				"root_url" => root_url,
 			),
@@ -859,7 +883,7 @@ function process_layouts(page::Page)::Page
 		input = TemplateInput(;
 			contents=read(layout_file),
 			absolute_path=layout_file,
-			relative_path=relpath(layout_file, input_dir),
+			relative_path=to_url_path(relpath(layout_file, input_dir)),
 			frontmatter=merge(output.frontmatter, 
 				FrontMatter(
 					"content" => content,
@@ -907,22 +931,17 @@ collected_search_index_data = [
 			page.output.frontmatter, "title", 
 			splitext(basename(page.input.relative_path))[1]
 		)::String,
+		description=string(get(page.output.frontmatter, "description", "")),
 		tags=get(page.output.frontmatter, "tags", String[]),
 		text=page.output.search_index_data,
 	)
 	for page in rendered_results if page.output.search_index_data !== nothing
 ]
 
-# ╔═╡ 1be06e4b-6072-46c3-a63d-aa95e51c43b4
-write(
-	joinpath(output_dir, "pp_search_data.json"), 
-	JSON.json(collected_search_index_data)
-)
-
 # ╔═╡ 608ed895-3a62-4c11-8026-40120ab05af1
 config_json_data = let
 	page = find(p -> basename(p.url) == "pluto_export_configuration.json", rendered_results)
-	page === nothing ? Dict{String,Any}() : JSON.parse(SafeString(page.input.contents))
+	page === nothing ? Dict{String,Any}() : JSON.parse(SafeString(page.input.contents); dicttype=Dict{String, Any})
 end
 
 # ╔═╡ bcf1ebd7-c5b7-44c9-9135-c632b4fae1b6
@@ -963,29 +982,63 @@ index_json = let
 	)
 end
 
-# ╔═╡ 7ed02eaa-9d88-4faa-a61f-bf1d1f748fce
-write(
-	joinpath(output_dir, "pluto_export.json"), 
-	JSON.json(index_json)
-)
-
 # ╔═╡ 9845db00-149c-45be-9e4f-55d1157afc87
-process_results = map(rendered_results) do page
-	input = page.input
-	output = page.output
-	
-	if output !== nothing && output.contents !== nothing
-		
-		# TODO: use front matter for permalink
-
-		output_path2 = joinpath(output_dir, page.full_url)
-		mkpath(output_path2 |> dirname)
-		# Our magic root url:
-		# in Julia, you can safely call `String` and `replace` on arbitrary, non-utf8 data :)
-		write(output_path2, 
-			replace(SafeString(output.contents), root_url => relpath(output_dir, output_path2 |> dirname))
-		)
+process_results = let
+	old_paths = map(readdir(output_dir)) do f
+		joinpath(output_dir, f)
 	end
+	
+	# create the new files
+	write_outputs = map(rendered_results) do page
+		input = page.input
+		output = page.output
+		
+		if output !== nothing && output.contents !== nothing
+			
+			# TODO: use front matter for permalink
+
+			output_path = joinpath(output_dir, to_url_path(page.full_url))
+			mkpath(output_path |> dirname)
+			# Our magic root url:
+			# in Julia, you can safely call `String` and `replace` on arbitrary, non-utf8 data :)
+			write(output_path, 
+				replace(SafeString(output.contents), root_url => to_url_path(relpath(output_dir, output_path |> dirname)))
+			)
+			
+			output_path
+		end
+	end
+	new_paths = filter(!isnothing, write_outputs)
+
+	# write the extra json files
+	for (p,d) in [
+		("pluto_export.json", index_json),
+		("pp_search_data.json", collected_search_index_data),
+	]
+		output_path = joinpath(output_dir, p)
+		push!(new_paths, output_path)
+		write(output_path, JSON.json(d))
+	end
+	
+	to_delete = filter(old_paths) do f
+		if occursin("generated_assets", f)
+			false
+		elseif isfile(f)
+			f ∉ new_paths
+		elseif isdir(f)
+			!any(new_paths) do p
+				startswith(p, joinpath(f, ""))
+			end
+		else
+			true
+		end
+	end
+	# delete any old files
+	for f in to_delete
+		rm(f; recursive=true)
+	end
+	
+	write_outputs
 end
 
 # ╔═╡ 70fa9af8-31f9-4e47-b36b-828c88166b3d
@@ -1061,6 +1114,8 @@ end
 # ╟─f6b89b8c-3750-4dd2-940e-579be953c1c2
 # ╟─29a81ad7-3803-4b7a-98ca-6e5b1077e1c7
 # ╠═c52c9786-a25f-11ec-1fdc-9b13922d7ccb
+# ╟─7237a468-538e-4131-a4e2-2da5fad8e963
+# ╟─86e5f9a5-e3bd-4725-87e4-19100fdc739c
 # ╟─cf27b3d3-1689-4b3a-a8fe-3ad639eb2f82
 # ╟─7f7f1981-978d-4861-b840-71ab611faf74
 # ╟─7d9cb939-da6b-4961-9584-a905ad453b5d
@@ -1104,10 +1159,8 @@ end
 # ╟─608ed895-3a62-4c11-8026-40120ab05af1
 # ╟─bcf1ebd7-c5b7-44c9-9135-c632b4fae1b6
 # ╟─d7a01c06-7174-4e6d-b02d-79c953ecdb79
-# ╠═7ed02eaa-9d88-4faa-a61f-bf1d1f748fce
 # ╟─1a303aa4-bed5-4d9b-855c-23355f4a88fe
-# ╠═1be06e4b-6072-46c3-a63d-aa95e51c43b4
-# ╠═9845db00-149c-45be-9e4f-55d1157afc87
+# ╟─9845db00-149c-45be-9e4f-55d1157afc87
 # ╟─eef54261-767a-4ce4-b549-0b1828379f7e
 # ╟─cda8689d-9ae5-42c4-8e7e-715cf44c33bb
 # ╟─4013400c-acb4-40fa-a826-fd0cbae09e7e

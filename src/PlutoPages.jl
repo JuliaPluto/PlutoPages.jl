@@ -59,6 +59,9 @@ function run_plutopages_notebook(;
     cache_dir::String,
     kwargs...
 )
+    @assert isabspath(input_dir)
+    @assert isabspath(output_dir)
+    @assert isabspath(cache_dir)
     run_with_replacements(
         PlutoPages_notebook_path,
         plutopages_replacements(; input_dir, output_dir, cache_dir, ap=Base.active_project(), lp=LOAD_PATH);
@@ -83,18 +86,20 @@ end
 
 
 function create_subdirs(root_dir::String)
-    @assert(isdir(root_dir))
-    @assert(isdir(joinpath(root_dir, "src")))
-    
+    root_dir = Pluto.tamepath(root_dir)
+    @assert isdir(root_dir)
+    input_dir = joinpath(root_dir, "src")
+    @assert isdir(input_dir) "Input directory is empty: $(input_dir).\n\nUse PlutoPages in a directory with a 'src' subdirectory. Your notebooks and markdown files go in there."
+
     (;
-        input_dir = joinpath(root_dir, "src"),
+        input_dir,
         output_dir = mkpath(joinpath(root_dir, "_site")),
         cache_dir = mkpath(joinpath(root_dir, "_cache")),
     )
 end
 
-function develop(root_dir::String)
-    develop(;create_subdirs(root_dir)...)
+function develop(root_dir::String; kwargs...)
+    develop(;create_subdirs(root_dir)..., kwargs...)
 end
 
 
@@ -107,6 +112,7 @@ const isolated_cell_ids = (
     "079a6399-50eb-4dee-a36d-b3dcb81c8456",
     "b0006e61-b037-41ed-a3e4-9962d15584c4",
     "06edb2d7-325f-4f80-8c55-dc01c7783054",
+    "9845db00-149c-45be-9e4f-55d1157afc87",
     "e0a25f24-a7de-4eac-9f88-cb7632de09eb",
 )
 const isolated_cell_query = join("&isolated_cell_id=$(i)" for i in isolated_cell_ids)
@@ -130,7 +136,6 @@ function develop(;
     notebook = fetch(app.notebook_task)
     
     ccall(:jl_exit_on_sigint, Cvoid, (Cint,), 0)
-    @info "PlutoPages: Press Ctrl+C multiple times to stop the server."
     file_server_port = rand(8100:8900)
     
     file_server_task = Threads.@spawn LiveServer.serve(; port=file_server_port, dir=output_dir, inject_browser_reload_script)
@@ -152,6 +157,8 @@ function develop(;
     ➡️   $(pluto_server_url)
 
     ✅✅✅
+    
+    Press Ctrl+C multiple times to stop the development server.
 
     """
 
@@ -162,7 +169,6 @@ function develop(;
     wait(app.pluto_server_instance)
     app
 end
-
 
 
 
@@ -198,7 +204,7 @@ function generate(;
     return output_dir
 end
 
-generate(root_dir::String) = generate(;create_subdirs(root_dir)...)
+generate(root_dir::String; kwargs...) = generate(;create_subdirs(root_dir)..., kwargs...)
 
 
 function create_test_basic_site()

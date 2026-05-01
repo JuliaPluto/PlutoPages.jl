@@ -2,13 +2,11 @@ $(begin
     import Pluto
     "The contents of `<head>` from a Pluto HTML export."
     const pluto_head = let
-        default = Pluto.generate_html(; 
-            pluto_cdn_root=Pluto.PLUTO_VERSION < v"0.19" ? "https://cdn.jsdelivr.net/gh/fonsp/Pluto.jl@9ca70c36/frontend/" : nothing)
+        default = Pluto.generate_html()
         m = match(r"<head.*?>(.*)</head>"s, default)
         reduce([
             # r"<script[^\n]data-pluto-file=[\"']?launch-parameters.*?/script>"s
             r"<title.*?/title>"
-            r"<meta name=[\"']?description.*?>"
             r"<meta name=[\"']?description.*?>"
             r"<link rel=[\"']?icon.*?>"
         ]; init=m[1]) do s,r
@@ -19,13 +17,7 @@ $(begin
 end)<html lang="en">
 <head>
 
-<title>$(get(page.output.frontmatter, "title", splitext(basename(page.input.relative_path))[1])) — Pluto.jl</title>
-$(let d = get(page.output.frontmatter, "description", nothing)
-    if d !== nothing
-        @htl("""<meta name="description" content=$(d) />""")
-    end
-end)
-
+$(Pluto.frontmatter_html(page.output.frontmatter) |> HTML)
 
 <link rel="icon" href="$(root_url)/assets/favicon.ico" />
 <link rel="icon" href="$(root_url)/assets/favicon.svg" type="image/svg+xml">
