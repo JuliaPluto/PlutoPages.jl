@@ -488,7 +488,7 @@ dir_changed_time = let
 		BetterFileWatching.watch_folder(input_dir) do e
 			@debug "File event" e
 			try
-				is_caused_by_me = all(x -> ignore(x; allow_special_dirs=true), e.paths)
+				is_caused_by_me = all(x -> ignore(x; allow_special_dirs=true), BetterFileWatching.paths_tuple(e))
 
 				if !is_caused_by_me
 					@info "Reloading!" e
